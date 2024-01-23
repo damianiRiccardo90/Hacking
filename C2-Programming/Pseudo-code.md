@@ -1,0 +1,3 @@
+# *__Pseudo-code__*
+
+Programmers have yet another form of programming language called pseudo-code. __Pseudo-code__ is simply English arranged with a general structure similar to a high-level language. It isn't understood by compilers, assemblers, or any computers, but it is a useful way for a programmer to arrange instructions. Pseudo-code isn't well defined; in fact, most people write pseudo-code slightly differently. It's sort of the nebulous missing link between English and high-level programming languages like C. Pseudo-code makes for an excellent introduction to common universal programming concepts.
