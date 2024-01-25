@@ -157,4 +157,98 @@ A breakpoint is set on the _main()_ function so execution will stop right before
 
 The first four registers (_EAX_, _ECX_, _EDX_, and _EBX_) are known as general purpose registers. These are called the _Accumulator_, _Counter_, _Data_, and _Base_ registers, respectively. They are used for a variety of purposes, but they mainly act as temporary variables for the CPU when it is executing machine instructions.
 
-The second four registers (_ESP_, _EBP_, _ESI_, and _EDI_) are also general purpose registers, but they are sometimes known as pointers and indexes. These stand for _Stack Pointer_, _Base Pointer_, _Source Index_, and _Destination Index_, respectively.
+The second four registers (_ESP_, _EBP_, _ESI_, and _EDI_) are also general purpose registers, but they are sometimes known as pointers and indexes. These stand for _Stack Pointer_, _Base Pointer_, _Source Index_, and _Destination Index_, respectively. The first two registers are called pointers because they store 32-bit addresses, which essentially point to that location in memory. These registers are fairly important to program execution and memory management; we will discuss them more later. The last two registers are also technically pointers, which are commonly used to point to the source and destination when data needs to be read from or written to. There are load and store instructions that use these registers, but for the most part, these registers can be thought of as just simple general-purpose registers.
+
+The _EIP_ register is the _Instruction Pointer_ register, which points to the current instruction the processor is reading. Like a child pointing his finger at each word as he reads, the processor reads each instruction using the _EIP_ register as its finger. Naturally, this register is quite important and will be used a lot while debugging. Currently, it points to a memory address at _0x804838a_.
+
+The remaining _EFLAGS_ register actually consists of several bit flags that are used for comparisons and memory segmentations. The actual memory is split into several different segments, which will be discussed later, and these registers keep track of that. For the most part, these registers can be ignored since they rarely need to be accessed directly.
+
+### *__Assembly Language__*
+
+Since we are using Intel syntax assembly language for this book, our tools must be configured to use this syntax. Inside GDB, the disassembly syntax can be set to INtel by simply typing _set disassembly intel_ or _set dis intel_, for short. You can configure this setting to run every time GDB starts up by putting the command in the file __.gdbinit__ in your home directory.
+
+```
+reader@hacking:~/booksrc $ gdb -q
+(gdb) set dis intel
+(gdb) quit
+reader@hacking:~/booksrc $ echo "set dis intel" > ~/.gdbinit
+reader@hacking:~/booksrc $ cat ~/.gdbinit
+set dis intel
+reader@hacking:~/booksrc $
+```
+
+Now that GDB is configured to use Intel syntax, let's begin understanding it. The assembly instructions in Intel syntax generally follow this style:
+
+```
+operation <destination>, <source>
+```
+
+The destination and source values will either be a register, a memory address, or a value. The operations are usually intuitive mnemonics: The __mov__ operation will move a value from the source to the destination, __sub__ will subtract, __inc__ will increment, and so forth. For example, the instructions below will move the value from _ESP_ to _EBP_ and then subtract 8 from _ESP_ (storing the result in _ESP_).
+
+```
+8048375: 89 e5    mov ebp,esp
+8048377: 83 ec 08 sub esp,0x8
+```
+
+There are also operations that are used to control the flow of execution. The __cmp__ operation is used to compare values, and basically any operation beginning with _j_ is used to jump to a different part of the code (depending on the result of the comparison). The example below first compares a 4-byte value located at _EBP_ minus 4 with the number 9. The next instruction is short-hand for _jump if less than or equal to_, referring to the result of the previous comparison. If that value is less than or equal to 9, execution jumps to the instruction at _0x8048393_. Otherwise, execution flows to the next instruction with an unconditional jump. If the value isn't less than or equal to 0, execution will jump to _0x80483a6_.
+
+```
+804838b: 83 7d fc 09 cmp DWORD PTR [ebp-4],0x9
+804838f: 7e 02       jle 8048393 <main+0x1f>
+8048391: eb 13       jmp 80483a6 <main+0x32>
+```
+
+These examples have been from our previous disassembly, and we have our debugger configured to use Intel syntax, so let's use the debugger to step through the first program at the assembly instruction level.
+
+The __-g__ flag can be used by the GCC compiler to include extra debugging information, which will give GDB access to the source code.
+
+```
+reader@hacking:~/booksrc $ gcc -g firstprog.c
+reader@hacking:~/booksrc $ ls -l a.out
+-rwxr-xr-x 1 matrix users 11977 Jul 4 17:29 a.out
+reader@hacking:~/booksrc $ gdb -q ./a.out
+Using host libthread_db library "/lib/libthread_db.so.1".
+(gdb) list
+1   #include <stdio.h>
+2
+3   int main()
+4   {
+5       int i;
+6       for(i = 0; i < 10; i++)
+7       {
+8           printf("Hello, world!\n");
+9       }
+10  }
+(gdb) disassemble main
+Dump of assembler code for function main():
+0x08048384 <main+0>:  push ebp
+0x08048385 <main+1>:  mov ebp,esp
+0x08048387 <main+3>:  sub esp,0x8
+0x0804838a <main+6>:  and esp,0xfffffff0
+0x0804838d <main+9>:  mov eax,0x0
+0x08048392 <main+14>: sub esp,eax
+0x08048394 <main+16>: mov DWORD PTR [ebp-4],0x0
+0x0804839b <main+23>: cmp DWORD PTR [ebp-4],0x9
+0x0804839f <main+27>: jle 0x80483a3 <main+31>
+0x080483a1 <main+29>: jmp 0x80483b6 <main+50>
+0x080483a3 <main+31>: mov DWORD PTR [esp],0x80484d4
+0x080483aa <main+38>: call 0x80482a8 <_init+56>
+0x080483af <main+43>: lea eax,[ebp-4]
+0x080483b2 <main+46>: inc DWORD PTR [eax]
+0x080483b4 <main+48>: jmp 0x804839b <main+23>
+0x080483b6 <main+50>: leave
+0x080483b7 <main+51>: ret
+End of assembler dump.
+(gdb) break main
+Breakpoint 1 at 0x8048394: file firstprog.c, line 6.
+(gdb) run
+Starting program: /hacking/a.out
+Breakpoint 1, main() at firstprog.c:6
+6 for(i = 0; i < 10; i++)
+(gdb) info register eip
+eip 0x8048394 0x8048394
+(gdb)
+```
+
+First, the source code is listed and the disassembly of the _main()_ function is displayed. Then a breakpoint is set at the start of _main()_, and the program is run. This breakpoint simply tells the debugger to pause the execution of the program when it gets to that point. Since the breakpoint hs been set at the start of the _main()_ function, the program hits the breakpoint and pauses before actually executing any instructions in _main()_. Then the value of _EIP_ (the Instruction Pointer) is displayed.
+
