@@ -315,4 +315,26 @@ This is slightly confusing, because sometimes the term _word_ also refers to 2-b
 (gdb)
 ```
 
-If you look closely
+If you look closely, you may notice something odd about the data above. The first examine command shows the first eight bytes, and naturally, the examine commands that use bigger units display more data in total. However, the first examine shows the first two bytes to be _0xc7_ and _0x45_, but when a halfword is examined at the exact same memory address, the value _0x45c7_ is shown, with the bytes reversed. This same byte-reversal effect can be see when a full four-byte word is shown as _0x00fc45c7_, but when the first four bytes are shown byte by byte, they are in the order of _0xc7_, 0x45_, _0xfc_, and _0x00_.
+
+This is because on the x86 processor values are stored in _little-endian byte order_, which means the least significant byte is stored first. For example, if four bytes are to be interpreted as a single value, the bytes must be used in reverse order. The GDB debugger is smart enough to know how values are stored, so when a word or halfword is examined, the byte must be reversed to display the correct values in hexadecimal. Revisiting these values displayed both as hexadecimal and unsigned decimals might help clear up any confusion.
+
+```
+(gdb) x/4xb $eip
+0x8048384 <main+16>: 0xc7 0x45 0xfc 0x00
+(gdb) x/4ub $eip
+0x8048384 <main+16>: 199 69 252 0
+(gdb) x/1xw $eip
+0x8048384 <main+16>: 0x00fc45c7
+(gdb) x/1uw $eip
+0x8048384 <main+16>: 16532935
+(gdb) quit
+The program is running. Exit anyway? (y or n) y
+reader@hacking:~/booksrc $ bc -ql
+199*(256^3) + 69*(256^2) + 252*(256^1) + 0*(256^0)
+3343252480
+0*(256^3) + 252*(256^2) + 69*(256^1) + 199*(256^0)
+16532935
+quit
+reader@hacking:~/booksrc $
+```
