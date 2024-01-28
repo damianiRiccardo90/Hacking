@@ -338,3 +338,119 @@ reader@hacking:~/booksrc $ bc -ql
 quit
 reader@hacking:~/booksrc $
 ```
+
+The first four bytes are shown both in hexadecimal and standard unsigned decimal notation. A command-line calculator program called __bc__ is used to show that if the bytes are interpreted in the incorrect order, a horribly incorrect value of _3343252480_ is the result. The byte oder of a given architecture is an important detail to be aware of. While most debugging tools and compilers will take care of the details of byte order automatically, eventually you will directly manipulate memory by yourself.
+
+In addition to converting byte order, GDB can do other conversions with the examine command. We've already seen that GDB can disassemble machine language instructions into human-readable assembly instructions. The examine command also accepts the format letter __i__, short for _instruction_, to display the memory as disassembled assembly language instructions.
+
+```
+reader@hacking:~/booksrc $ gdb -q ./a.out
+Using host libthread_db library "/lib/tls/i686/cmov/libthread_db.so.1".
+(gdb) break main
+Breakpoint 1 at 0x8048384: file firstprog.c, line 6.
+(gdb) run
+Starting program: /home/reader/booksrc/a.out
+Breakpoint 1, main () at firstprog.c:6
+6 for(i=0; i < 10; i++)
+(gdb) i r $eip
+eip 0x8048384 0x8048384 <main+16>
+(gdb) x/i $eip
+0x8048384 <main+16>: mov DWORD PTR [ebp-4],0x0
+(gdb) x/3i $eip
+0x8048384 <main+16>: mov DWORD PTR [ebp-4],0x0
+0x804838b <main+23>: cmp DWORD PTR [ebp-4],0x9
+0x804838f <main+27>: jle 0x8048393 <main+31>
+(gdb) x/7xb $eip
+0x8048384 <main+16>: 0xc7 0x45 0xfc 0x00 0x00 0x00 0x00
+(gdb) x/i $eip
+0x8048384 <main+16>: mov DWORD PTR [ebp-4],0x0
+(gdb)
+```
+
+In the output above, the _a.out_ program is run in GDB, with a breakpoint set at _main()_. Since the _EIP_ register is pointing to memory that actually contains machine language instructions, they disassemble quite nicely.
+
+The previous _objdump_ disassembly confirms that the seven bytes _EIP_ is pointing to actually are machine language for the corresponding assembly instruction.
+
+```
+8048384: c7 45 fc 00 00 00 00 mov DWORD PTR [ebp-4],0x0
+```
+
+This assembly instruction will move the value of 0 into memory located at the address store in the _EBP_ register, minus 4. This is where the C variable __i__ is stored in memory; _i_ was declared as an integer that uses 4 bytes of memory on the x86 processor. Basically, this command will zero out the variable _i_ for the loop. If that memory is examined right now, it will contain nothing but random garbage. The memory at this location can be examined several different ways.
+
+```
+(gdb) i r ebp
+ebp 0xbffff808 0xbffff808
+(gdb) x/4xb $ebp - 4
+0xbffff804: 0xc0 0x83 0x04 0x08
+(gdb) x/4xb 0xbffff804
+0xbffff804: 0xc0 0x83 0x04 0x08
+(gdb) print $ebp - 4
+$1 = (void *) 0xbffff804
+(gdb) x/4xb $1
+0xbffff804: 0xc0 0x83 0x04 0x08
+(gdb) x/xw $1
+0xbffff804: 0x080483c0
+(gdb)
+```
+
+The _EBP_ register is shown to contain the address _0xbffff808_, and the assembly instruction will be writing to a value offset by 4 less than that, _0xbffff804_. The examine command can examine this memory address directly or by doing the math on the fly. The _print_ command can also be used to do simple math, but the result is stored in a temporary variable in the debugger. This variable named __$1__ can be used later to quickly re-access a particular location in memory. Any of the methods sown above will accomplish the same task: Displaying the 4 garbage bytes found in memory that will be zeroed out when the current instruction executes.
+
+Let's execute the current instruction using the command _nexti_, which is short for _next instruction_. The processor will read the instruction at _EIP_, execute it, and advance _EIP_ to the next instruction.
+
+```
+(gdb) nexti
+0x0804838b 6 for(i=0; i < 10; i++)
+(gdb) x/4xb $1
+0xbffff804: 0x00 0x00 0x00 0x00
+(gdb) x/dw $1
+0xbffff804: 0
+(gdb) i r eip
+eip 0x804838b 0x804838b <main+23>
+(gdb) x/i $eip
+0x804838b <main+23>: cmp DWORD PTR [ebp-4],0x9
+(gdb)
+```
+
+As predicted, the previous command zeroes out the 4 bytes found at _EBP_ minus 4, which is memory set aside for the C variable _i_. Then _EIP_ advances to the next instruction. The next few instructions actually make more sense to talk about in a group.
+
+```
+(gdb) x/10i $eip
+0x804838b <main+23>: cmp DWORD PTR [ebp-4],0x9
+0x804838f <main+27>: jle 0x8048393 <main+31>
+0x8048391 <main+29>: jmp 0x80483a6 <main+50>
+0x8048393 <main+31>: mov DWORD PTR [esp],0x8048484
+0x804839a <main+38>: call 0x80482a0 <printf@plt>
+0x804839f <main+43>: lea eax,[ebp-4]
+0x80483a2 <main+46>: inc DWORD PTR [eax]
+0x80483a4 <main+48>: jmp 0x804838b <main+23>
+0x80483a6 <main+50>: leave
+0x80483a7 <main+51>: ret
+(gdb)
+```
+
+The first instruction, _cmp_, is a compare instruction, which will compare the memory used by the C variable _i_ with the value 9. The next instruction, _jle_ stands for _jump if less than or equal to_. It uses the results of the previous comparison (which are actually stored in the _EFLAGS_ register) to jump _EIP_ to point to a different part of the code if the destination of the previous comparison operation is less than or equal to the source. In this case the instruction says to jump to the address _0x8048393_ if the value store in memory for the C variable _i_ is less than or equal to the value 9. If this isn't the case, the _EIP_ will continue to the next instruction, which is an unconditional jump instruction. This will cause the _EIP_ to jump to the address _0x80483a6_. These three instructions combine to create an if-then-else control structure: _If the i is less than or equal to 9, then go to the instruction at address 0x8048393; otherwise, go to the instruction at address 0x80483a6_. The first address of _0x8048393_ (shown in bold) is simply the instruction found after the fixed jump instruction, and the second address of _0x80483a6_ (shown in italics) is located at the end of the function.
+
+Since we know the value 0 is stored in the memory location being compared with the value 9, and we know that 0 is less than or equal to 9, _EIP_ should be at _0x8048393_ after executing the next two instructions.
+
+```
+(gdb) nexti
+0x0804838f 6 for(i=0; i < 10; i++)
+(gdb) x/i $eip
+0x804838f <main+27>: jle 0x8048393 <main+31>
+(gdb) nexti
+8 printf("Hello, world!\n");
+(gdb) i r eip
+eip 0x8048393 0x8048393 <main+31>
+(gdb) x/2i $eip
+0x8048393 <main+31>: mov DWORD PTR [esp],0x8048484
+0x804839a <main+38>: call 0x80482a0 <printf@plt>
+(gdb)
+```
+
+As expected, the previous two instructions let the program execution flow down to _0x8048393_, which brings us to the net two instructions. The first instruction is another _mov_ instruction that will write the address _0x8048484_ into the memory address contained in the _ESP_ register. But what is _ESP_ pointing to?
+
+```
+(gdb) i r esp
+esp 0xbffff800 0xbffff800
+(gdb)
+```

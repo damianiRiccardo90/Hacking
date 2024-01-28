@@ -15,7 +15,7 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
   2. [**Pseudo-code**](C2-Programming/Pseudo-code.md)
   3. [**Control Structures**](C2-Programming/Control_Structures.md)
   4. [**More Fundamental Programming Concepts**](C2-Programming/More_Fundamental_Programming_Concepts.md)
-  5. [**Getting Your Hands Dirty**](C2-Programming/Getting_Your_Hands_Dirty.md)
+  5. [**Getting Your Hands Dirty**](C2-Programming/Getting_Your_Hands_Dirty.md) :godmode:
   6. [**Back to Basics**](C2-Programming/Back_To_Basics.md)
   7. [**Memory Segmentation**](C2-Programming/Memory_Segmentation.md)
   8. [**Building on Basics**](C2-Programming/Building_On_Basics.md)
