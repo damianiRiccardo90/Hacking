@@ -97,34 +97,34 @@ The example statement consisting of the two smaller conditions join ed with OR l
 
 Many things can be boiled down to variables, comparison operators, and control structures. Returning to the example of the mouse searching for food, hunger can be translated into a Boolean true/false variable. Naturally, 1 means true and 0 means false.
 
-```
+<pre style="color: white;">
 While (hungry == 1)
 {
     Find some food;
     Eat the food;
 }
-```
+</pre>
 
 Here's another shorthand used by programmers and hackers quite often. C doesn't really have any Boolean operators, so any nonzero value is considered true, and a statement is considered false if it contains 0. In fact, the comparison operator will actually return a value of 1 if the comparison is true and a value of 0 if it is false. Checking to see whether the variable __hungry__ is equal to 1 will return 1 if __hungry__ equals 1 and 0 if __hungry__ equals 0. Since the program only uses these two cases, the comparison operator can be dropped altogether.
 
-```
+<pre style="color: white;">
 While (hungry)
 {
     Find some food;
     Eat the food;
 }
-```
+</pre>
 
 A smarter mouse program with more inputs demonstrates how comparison operators can be combined with variables.
 
-```
+<pre style="color: white;">
 While ((hungry) && !(cat_present))
 {
     Find some food;
     If(!(food_is_on_a_mousetrap))
         Eat the food;
 }
-```
+</pre>
 
 This example assumes there are also variables that describe the presence of a cat and the location of the food, with a value of 1 for true and 0 for false. Just remember that any nonzero value is considered true, and the value of 0 is considered false.
 
@@ -132,7 +132,7 @@ This example assumes there are also variables that describe the presence of a ca
 
 Sometimes there will be a set of instructions the programmer knows he will need several times. These instructions can be grouped into a smaller sub-program called a __function__. In other languages, functions are known as sub-routines or procedures. For example, the action of turning a car actually consists of many smaller instructions: Turn on the appropriate blinker, slow down, check for oncoming traffic, turn the steering wheel in the appropriate direction, and so on. The driving directions from the beginning of this chapter require quite a few turns; however, listing every little instruction for every turn would be tedious (and less readable). You can pass variable as arguments to a function in order to modify the way the function operates. In this case, the function is passed the direction of the turn.
 
-```
+<pre style="color: white;">
 Function Turn(variable_direction)
 {
     Activate the variable_direction blinker;
@@ -152,7 +152,7 @@ Function Turn(variable_direction)
     Turn the steering wheel back to the original position;
     Turn off the variable_direction blinker;
 }
-```
+</pre>
 
 This function describes all the instructions needed to make a turn. When a program that knows about this function needs to turn, it can just call this function. When the function is called, the instructions found within it are executed with the arguments passed to it; afterward, execution returns to where it was in the program, after the function call. Either left or right can be passed into this function, which caused the function to runt in that direction.
 
@@ -187,7 +187,7 @@ Usually, function prototypes are located near the beginning of a program. There'
 
 If a function doesn't have any value to return, it should be declared as __void__, as is the case with the _turn()_ function I used as an example earlier. However, the _turn()_ function doesn't yet capture all the functionality that our driving directions need. Every turn in the directions has both a direction and a street name. This means that a turning function should have two variables: The direction to turn and the street to turn on to. This complicates the function of turning, since the proper street must be located before the turn can be made. A more complete turning function using proper C-like syntax is listed below in pseudo-code.
 
-```
+<pre style="color: white;">
 void turn(variable_direction, target_street_name)
 {
     Look for a street sign;
@@ -215,11 +215,11 @@ void turn(variable_direction, target_street_name)
     Turn the steering wheel right back to the original position;
     Turn off the variable_direction blinker;
 }
-```
+</pre>
 
 This function includes a section that searches for the proper intersection by looking for street signs, reading the name on each street sign, and storing that name in a variable called __current_intersection_name__. It will continue to look for and read street signs until the target street is found; at that point, the remaining turning instructions will be executed. The pseudo-code driving instructions can now be changed to use this turning function.
 
-```
+<pre style="color: white;">
 Begin going East on Main Street;
 while (there is not a church on the right)
     Drive down Main Street;
@@ -235,6 +235,6 @@ Turn(left, Destination Road);
 for (i = 0; i < 5; i++)
     Drive straight for 1 mile;
 Stop at 743 Destination Road;
-```
+</pre>
 
 Functions aren't commonly used in pseudo-code, since pseudo-code is mostly used as a way for programmers to sketch out program concepts before writing compilable code. Since pseudo-code doesn't actually have to work, full functions don't need to be written out, simply jotting down _Do some complex stuff here_ will suffice. But in a programming language like C, functions are used heavily. Most of the real usefulness of C comes from collections of existing functions called libraries.

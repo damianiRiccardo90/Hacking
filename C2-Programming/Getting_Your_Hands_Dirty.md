@@ -53,7 +53,7 @@ As long as the compiled program works, the average programmer is only concerned 
 
 <pre style="color: white;">
 reader@hacking:~/booksrc $ objdump -D a.out | grep -A20 main.:
-08048374 <main>:
+08048374 &lt;main&gt;:
 8048374: 55 push %ebp
 8048375: 89 e5 mov %esp,%ebp
 8048377: 83 ec 08 sub $0x8,%esp
@@ -62,13 +62,13 @@ reader@hacking:~/booksrc $ objdump -D a.out | grep -A20 main.:
 8048382: 29 c4 sub %eax,%esp
 8048384: c7 45 fc 00 00 00 00 movl $0x0,0xfffffffc(%ebp)
 804838b: 83 7d fc 09 cmpl $0x9,0xfffffffc(%ebp)
-804838f: 7e 02 jle 8048393 <main+0x1f>
-8048391: eb 13 jmp 80483a6 <main+0x32>
+804838f: 7e 02 jle 8048393 &lt;main+0x1f&gt;
+8048391: eb 13 jmp 80483a6 &lt;main+0x32&gt;
 8048393: c7 04 24 84 84 04 08 movl $0x8048484,(%esp)
-804839a: e8 01 ff ff ff call 80482a0 <printf@plt>
+804839a: e8 01 ff ff ff call 80482a0 &lt;printf@plt&gt;
 804839f: 8d 45 fc lea 0xfffffffc(%ebp),%eax
 80483a2: ff 00 incl (%eax)
-80483a4: eb e5 jmp 804838b <main+0x17>
+80483a4: eb e5 jmp 804838b &lt;main+0x17&gt;
 80483a6: c9 leave
 80483a7: c3 ret
 80483a8: 90 nop
@@ -89,7 +89,7 @@ Come to think of it, the hexadecimal bytes really aren't very useful themselves,
 
 <pre style="color: white;">
 reader@hacking:~/booksrc $ objdump -M intel -D a.out | grep -A20 main.:
-08048374 <main>:
+08048374 &lt;main&gt;:
 8048374: 55 push ebp
 8048375: 89 e5 mov ebp,esp
 8048377: 83 ec 08 sub esp,0x8
@@ -98,13 +98,13 @@ reader@hacking:~/booksrc $ objdump -M intel -D a.out | grep -A20 main.:
 8048382: 29 c4 sub esp,eax
 8048384: c7 45 fc 00 00 00 00 mov DWORD PTR [ebp-4],0x0
 804838b: 83 7d fc 09 cmp DWORD PTR [ebp-4],0x9
-804838f: 7e 02 jle 8048393 <main+0x1f>
-8048391: eb 13 jmp 80483a6 <main+0x32>
+804838f: 7e 02 jle 8048393 &lt;main+0x1f&gt;
+8048391: eb 13 jmp 80483a6 &lt;main+0x32&gt;
 8048393: c7 04 24 84 84 04 08 mov DWORD PTR [esp],0x8048484
-804839a: e8 01 ff ff ff call 80482a0 <printf@plt>
+804839a: e8 01 ff ff ff call 80482a0 &lt;printf@plt&gt;
 804839f: 8d 45 fc lea eax,[ebp-4]
 80483a2: ff 00 inc DWORD PTR [eax]
-80483a4: eb e5 jmp 804838b <main+0x17>
+80483a4: eb e5 jmp 804838b &lt;main+0x17&gt;
 80483a6: c9 leave
 80483a7: c3 ret
 80483a8: 90 nop
@@ -140,7 +140,7 @@ esp 0xbffff800 0xbffff800
 ebp 0xbffff808 0xbffff808
 esi 0xb8000ce0 -1207956256
 edi 0x0 0
-eip 0x804837a 0x804837a <main+6>
+eip 0x804837a 0x804837a &lt;main+6&gt;
 eflags 0x286 [ PF SF IF ]
 cs 0x73 115
 ss 0x7b 123
@@ -180,7 +180,7 @@ reader@hacking:~/booksrc $
 Now that GDB is configured to use Intel syntax, let's begin understanding it. The assembly instructions in Intel syntax generally follow this style:
 
 <pre style="color: white;">
-operation <destination>, <source>
+operation &lt;destination&gt;, &lt;source&gt;
 </pre>
 
 The destination and source values will either be a register, a memory address, or a value. The operations are usually intuitive mnemonics: The __mov__ operation will move a value from the source to the destination, __sub__ will subtract, __inc__ will increment, and so forth. For example, the instructions below will move the value from _ESP_ to _EBP_ and then subtract 8 from _ESP_ (storing the result in _ESP_).
@@ -194,8 +194,8 @@ There are also operations that are used to control the flow of execution. The __
 
 <pre style="color: white;">
 804838b: 83 7d fc 09 cmp DWORD PTR [ebp-4],0x9
-804838f: 7e 02       jle 8048393 <main+0x1f>
-8048391: eb 13       jmp 80483a6 <main+0x32>
+804838f: 7e 02       jle 8048393 &lt;main+0x1f&gt;
+8048391: eb 13       jmp 80483a6 &lt;main+0x32&gt;
 </pre>
 
 These examples have been from our previous disassembly, and we have our debugger configured to use Intel syntax, so let's use the debugger to step through the first program at the assembly instruction level.
@@ -209,7 +209,7 @@ reader@hacking:~/booksrc $ ls -l a.out
 reader@hacking:~/booksrc $ gdb -q ./a.out
 Using host libthread_db library "/lib/libthread_db.so.1".
 (gdb) list
-1   #include <stdio.h>
+1   #include &lt;stdio.h&gt;
 2
 3   int main()
 4   {
@@ -221,23 +221,23 @@ Using host libthread_db library "/lib/libthread_db.so.1".
 10  }
 (gdb) disassemble main
 Dump of assembler code for function main():
-0x08048384 <main+0>:  push ebp
-0x08048385 <main+1>:  mov ebp,esp
-0x08048387 <main+3>:  sub esp,0x8
-0x0804838a <main+6>:  and esp,0xfffffff0
-0x0804838d <main+9>:  mov eax,0x0
-0x08048392 <main+14>: sub esp,eax
-<strong><em>0x08048394 <main+16>: mov DWORD PTR [ebp-4],0x0</em></strong>
-0x0804839b <main+23>: cmp DWORD PTR [ebp-4],0x9
-0x0804839f <main+27>: jle 0x80483a3 <main+31>
-0x080483a1 <main+29>: jmp 0x80483b6 <main+50>
-0x080483a3 <main+31>: mov DWORD PTR [esp],0x80484d4
-0x080483aa <main+38>: call 0x80482a8 <_init+56>
-0x080483af <main+43>: lea eax,[ebp-4]
-0x080483b2 <main+46>: inc DWORD PTR [eax]
-0x080483b4 <main+48>: jmp 0x804839b <main+23>
-0x080483b6 <main+50>: leave
-0x080483b7 <main+51>: ret
+0x08048384 &lt;main+0&gt;:  push ebp
+0x08048385 &lt;main+1&gt;:  mov ebp,esp
+0x08048387 &lt;main+3&gt;:  sub esp,0x8
+0x0804838a &lt;main+6&gt;:  and esp,0xfffffff0
+0x0804838d &lt;main+9&gt;:  mov eax,0x0
+0x08048392 &lt;main+14&gt;: sub esp,eax
+<strong><em>0x08048394 &lt;main+16&gt;: mov DWORD PTR [ebp-4],0x0</em></strong>
+0x0804839b &lt;main+23&gt;: cmp DWORD PTR [ebp-4],0x9
+0x0804839f &lt;main+27&gt;: jle 0x80483a3 &lt;main+31&gt;
+0x080483a1 &lt;main+29&gt;: jmp 0x80483b6 &lt;main+50&gt;
+0x080483a3 &lt;main+31&gt;: mov DWORD PTR [esp],0x80484d4
+0x080483aa &lt;main+38&gt;: call 0x80482a8 &lt;_init+56&gt;
+0x080483af &lt;main+43&gt;: lea eax,[ebp-4]
+0x080483b2 &lt;main+46&gt;: inc DWORD PTR [eax]
+0x080483b4 &lt;main+48&gt;: jmp 0x804839b &lt;main+23&gt;
+0x080483b6 &lt;main+50&gt;: leave
+0x080483b7 &lt;main+51&gt;: ret
 End of assembler dump.
 (gdb) break main
 Breakpoint 1 at 0x8048394: file firstprog.c, line 6.
@@ -269,15 +269,15 @@ These can be used with the examine command to examine a certain memory address. 
 
 <pre style="color: white;">
 (gdb) i r eip
-eip 0x8048384 0x8048384 <main+16>
+eip 0x8048384 0x8048384 &lt;main+16&gt;
 (gdb) x/o 0x8048384
-0x8048384 <main+16>: 077042707
+0x8048384 &lt;main+16&gt;: 077042707
 (gdb) x/x $eip
-0x8048384 <main+16>: 0x00fc45c7
+0x8048384 &lt;main+16&gt;: 0x00fc45c7
 (gdb) x/u $eip
-0x8048384 <main+16>: 16532935
+0x8048384 &lt;main+16&gt;: 16532935
 (gdb) x/t $eip
-0x8048384 <main+16>: 00000000111111000100010111000111
+0x8048384 &lt;main+16&gt;: 00000000111111000100010111000111
 (gdb)
 </pre>
 
@@ -285,11 +285,11 @@ The memory the _EIP_ register is pointing to can be examined by using the addres
 
 <pre style="color: white;">
 (gdb) x/2x $eip
-0x8048384 <main+16>: 0x00fc45c7 0x83000000
+0x8048384 &lt;main+16&gt;: 0x00fc45c7 0x83000000
 (gdb) x/12x $eip
-0x8048384 <main+16>: 0x00fc45c7 0x83000000 0x7e09fc7d 0xc713eb02
-0x8048394 <main+32>: 0x84842404 0x01e80804 0x8dffffff 0x00fffc45
-0x80483a4 <main+48>: 0xc3c9e5eb 0x90909090 0x90909090 0x5de58955
+0x8048384 &lt;main+16&gt;: 0x00fc45c7 0x83000000 0x7e09fc7d 0xc713eb02
+0x8048394 &lt;main+32&gt;: 0x84842404 0x01e80804 0x8dffffff 0x00fffc45
+0x80483a4 &lt;main+48&gt;: 0xc3c9e5eb 0x90909090 0x90909090 0x5de58955
 (gdb)
 </pre>
 
@@ -306,12 +306,12 @@ This is slightly confusing, because sometimes the term _word_ also refers to 2-b
 
 <pre style="color: white;">
 (gdb) x/8xb $eip
-0x8048384 <main+16>: 0xc7 0x45 0xfc 0x00 0x00 0x00 0x00 0x83
+0x8048384 &lt;main+16&gt;: 0xc7 0x45 0xfc 0x00 0x00 0x00 0x00 0x83
 (gdb) x/8xh $eip
-0x8048384 <main+16>: 0x45c7 0x00fc 0x0000 0x8300 0xfc7d 0x7e09 0xeb02 0xc713
+0x8048384 &lt;main+16&gt;: 0x45c7 0x00fc 0x0000 0x8300 0xfc7d 0x7e09 0xeb02 0xc713
 (gdb) x/8xw $eip
-0x8048384 <main+16>: 0x00fc45c7 0x83000000 0x7e09fc7d 0xc713eb02
-0x8048394 <main+32>: 0x84842404 0x01e80804 0x8dffffff 0x00fffc45
+0x8048384 &lt;main+16&gt;: 0x00fc45c7 0x83000000 0x7e09fc7d 0xc713eb02
+0x8048394 &lt;main+32&gt;: 0x84842404 0x01e80804 0x8dffffff 0x00fffc45
 (gdb)
 </pre>
 
@@ -321,13 +321,13 @@ This is because on the x86 processor values are stored in _little-endian byte or
 
 <pre style="color: white;">
 (gdb) x/4xb $eip
-0x8048384 <main+16>: 0xc7 0x45 0xfc 0x00
+0x8048384 &lt;main+16&gt;: 0xc7 0x45 0xfc 0x00
 (gdb) x/4ub $eip
-0x8048384 <main+16>: 199 69 252 0
+0x8048384 &lt;main+16&gt;: 199 69 252 0
 (gdb) x/1xw $eip
-0x8048384 <main+16>: 0x00fc45c7
+0x8048384 &lt;main+16&gt;: 0x00fc45c7
 (gdb) x/1uw $eip
-0x8048384 <main+16>: 16532935
+0x8048384 &lt;main+16&gt;: 16532935
 (gdb) quit
 The program is running. Exit anyway? (y or n) y
 reader@hacking:~/booksrc $ bc -ql
@@ -353,17 +353,17 @@ Starting program: /home/reader/booksrc/a.out
 Breakpoint 1, main () at firstprog.c:6
 6 for(i=0; i < 10; i++)
 (gdb) i r $eip
-eip 0x8048384 0x8048384 <main+16>
+eip 0x8048384 0x8048384 &lt;main+16&gt;
 (gdb) x/i $eip
-0x8048384 <main+16>: mov DWORD PTR [ebp-4],0x0
+0x8048384 &lt;main+16&gt;: mov DWORD PTR [ebp-4],0x0
 (gdb) x/3i $eip
-0x8048384 <main+16>: mov DWORD PTR [ebp-4],0x0
-0x804838b <main+23>: cmp DWORD PTR [ebp-4],0x9
-0x804838f <main+27>: jle 0x8048393 <main+31>
+0x8048384 &lt;main+16&gt;: mov DWORD PTR [ebp-4],0x0
+0x804838b &lt;main+23&gt;: cmp DWORD PTR [ebp-4],0x9
+0x804838f &lt;main+27&gt;: jle 0x8048393 &lt;main+31&gt;
 (gdb) x/7xb $eip
-0x8048384 <main+16>: 0xc7 0x45 0xfc 0x00 0x00 0x00 0x00
+0x8048384 &lt;main+16&gt;: 0xc7 0x45 0xfc 0x00 0x00 0x00 0x00
 (gdb) x/i $eip
-0x8048384 <main+16>: mov DWORD PTR [ebp-4],0x0
+0x8048384 &lt;main+16&gt;: mov DWORD PTR [ebp-4],0x0
 (gdb)
 </pre>
 
@@ -405,9 +405,9 @@ Let's execute the current instruction using the command _nexti_, which is short 
 (gdb) x/dw $1
 0xbffff804: 0
 (gdb) i r eip
-eip 0x804838b 0x804838b <main+23>
+eip 0x804838b 0x804838b &lt;main+23&gt;
 (gdb) x/i $eip
-0x804838b <main+23>: cmp DWORD PTR [ebp-4],0x9
+0x804838b &lt;main+23&gt;: cmp DWORD PTR [ebp-4],0x9
 (gdb)
 </pre>
 
@@ -415,16 +415,16 @@ As predicted, the previous command zeroes out the 4 bytes found at _EBP_ minus 4
 
 <pre style="color: white;">
 (gdb) x/10i $eip
-0x804838b <main+23>: cmp DWORD PTR [ebp-4],0x9
-0x804838f <main+27>: jle 0x8048393 <main+31>
-0x8048391 <main+29>: jmp 0x80483a6 <main+50>
-<strong><em>0x8048393 <main+31>: mov DWORD PTR [esp],0x8048484</em></strong>
-0x804839a <main+38>: call 0x80482a0 <printf@plt>
-0x804839f <main+43>: lea eax,[ebp-4]
-0x80483a2 <main+46>: inc DWORD PTR [eax]
-0x80483a4 <main+48>: jmp 0x804838b <main+23>
-0x80483a6 <main+50>: leave
-0x80483a7 <main+51>: ret
+0x804838b &lt;main+23&gt;: cmp DWORD PTR [ebp-4],0x9
+0x804838f &lt;main+27&gt;: jle 0x8048393 &lt;main+31&gt;
+0x8048391 &lt;main+29&gt;: jmp 0x80483a6 &lt;main+50&gt;
+<strong><em>0x8048393 &lt;main+31&gt;: mov DWORD PTR [esp],0x8048484</em></strong>
+0x804839a &lt;main+38&gt;: call 0x80482a0 &lt;printf@plt&gt;
+0x804839f &lt;main+43&gt;: lea eax,[ebp-4]
+0x80483a2 &lt;main+46&gt;: inc DWORD PTR [eax]
+0x80483a4 &lt;main+48&gt;: jmp 0x804838b &lt;main+23&gt;
+0x80483a6 &lt;main+50&gt;: leave
+0x80483a7 &lt;main+51&gt;: ret
 (gdb)
 </pre>
 
@@ -436,14 +436,14 @@ Since we know the value 0 is stored in the memory location being compared with t
 (gdb) nexti
 0x0804838f 6 for(i=0; i < 10; i++)
 (gdb) x/i $eip
-0x804838f <main+27>: jle 0x8048393 <main+31>
+0x804838f &lt;main+27&gt;: jle 0x8048393 &lt;main+31&gt;
 (gdb) nexti
 8 printf("Hello, world!\n");
 (gdb) i r eip
-eip 0x8048393 0x8048393 <main+31>
+eip 0x8048393 0x8048393 &lt;main+31&gt;
 (gdb) x/2i $eip
-0x8048393 <main+31>: mov DWORD PTR [esp],0x8048484
-0x804839a <main+38>: call 0x80482a0 <printf@plt>
+0x8048393 &lt;main+31&gt;: mov DWORD PTR [esp],0x8048484
+0x804839a &lt;main+38&gt;: call 0x80482a0 &lt;printf@plt&gt;
 (gdb)
 </pre>
 
@@ -554,8 +554,8 @@ These commands reveal that the data string _"Hello, world!\n"_ is stored at memo
 
 <pre style="color: white;">
 (gdb) x/2i $eip
-0x8048393 <main+31>: mov DWORD PTR [esp],0x8048484
-0x804839a <main+38>: call 0x80482a0 <printf@plt>
+0x8048393 &lt;main+31&gt;: mov DWORD PTR [esp],0x8048484
+0x804839a &lt;main+38&gt;: call 0x80482a0 &lt;printf@plt&gt;
 (gdb) x/xw $esp
 0xbffff800: 0xb8000ce0
 (gdb) nexti
@@ -569,9 +569,102 @@ The next instruction is actually called the _printf()_ function; it prints the d
 
 <pre style="color: white;">
 (gdb) x/i $eip
-0x804839a <main+38>: call 0x80482a0 <printf@plt>
+0x804839a &lt;main+38&gt;: call 0x80482a0 &lt;printf@plt&gt;
 (gdb) nexti
 <strong><em>Hello, world!</em></strong>
 6 for(i=0; i < 10; i++)
 (gdb)
 </pre>
+
+Continuing to use GDB to debug, let's examine the next two instructions. Once again, they make more sense to look at in a group.
+
+<pre style="color: white;">
+(gdb) x/2i $eip
+0x804839f &lt;main+43&gt;: lea eax,[ebp-4]
+0x80483a2 &lt;main+46&gt;: inc DWORD PTR [eax]
+(gdb)
+</pre>
+
+These two instructions basically just increment the variable __i__ by 1. The __lea__ instruction is an acronym for _Load Effective Address_, which will load the familiar address of _EBP_ minus 4 into the _EAX_ register. The execution of this instruction is shown below.
+
+<pre style="color: white;">
+(gdb) x/i $eip
+0x804839f &lt;main+43&gt;: lea eax,[ebp-4]
+(gdb) print $ebp - 4
+$2 = (void *) 0xbffff804
+(gdb) x/x $2
+0xbffff804: 0x00000000
+(gdb) i r eax
+eax 0xd 13
+(gdb) nexti
+0x080483a2 6 for(i=0; i < 10; i++)
+(gdb) i r eax
+eax 0xbffff804 -1073743868
+(gdb) x/xw $eax
+0xbffff804: 0x00000000
+(gdb) x/dw $eax
+0xbffff804: 0
+(gdb)
+</pre>
+
+The following __inc__ instruction will increment the value found at this address (now stored in the _EAX_ register) by 1. The execution of this instruction is also shown below.
+
+<pre style="color: white;">
+(gdb) x/i $eip
+0x80483a2 &lt;main+46&gt;: inc DWORD PTR [eax]
+(gdb) x/dw $eax
+0xbffff804: 0
+(gdb) nexti
+0x080483a4 6 for(i=0; i < 10; i++)
+(gdb) x/dw $eax
+0xbffff804: 1
+(gdb)
+</pre>
+
+The end result is the value stored at the memory address _EBP_ minus 4 (_0xbffff804_), incremented by 1. This behavior corresponds to a portion of C code in which the variable _i_ is incremented in the for loop.
+The next instruction is an unconditional jump instruction.
+
+<pre style="color: white;">
+(gdb) x/i $eip
+0x80483a4 &lt;main+48&gt;: jmp 0x804838b &lt;main+23&gt;
+(gdb)
+</pre>
+
+When this instruction is executed, it will send the program back to the instruction at address _0x804838b_. It does this by simply setting _EIP_ to that value. Looking at the full disassembly again, you should be able to tell which parts of the C code have been compiled into which machine instructions.
+
+<pre style="color: white;">
+(gdb) disass main
+Dump of assembler code for function main:
+0x08048374 &lt;main+0&gt;: push ebp
+0x08048375 &lt;main+1&gt;: mov ebp,esp
+0x08048377 &lt;main+3&gt;: sub esp,0x8
+0x0804837a &lt;main+6&gt;: and esp,0xfffffff0
+0x0804837d &lt;main+9&gt;: mov eax,0x0
+0x08048382 &lt;main+14&gt;: sub esp,eax
+0x08048384 &lt;main+16&gt;: mov DWORD PTR [ebp-4],0x0
+0x0804838b &lt;main+23&gt;: cmp DWORD PTR [ebp-4],0x9
+0x0804838f &lt;main+27&gt;: jle 0x8048393 &lt;main+31&gt;
+0x08048391 &lt;main+29&gt;: jmp 0x80483a6 &lt;main+50&gt;
+0x08048393 &lt;main+31&gt;: mov DWORD PTR [esp],0x8048484
+0x0804839a &lt;main+38&gt;: call 0x80482a0 &lt;printf@plt&gt;
+0x0804839f &lt;main+43&gt;: lea eax,[ebp-4]
+0x080483a2 &lt;main+46&gt;: inc DWORD PTR [eax]
+0x080483a4 &lt;main+48&gt;: jmp 0x804838b &lt;main+23&gt;
+0x080483a6 &lt;main+50&gt;: leave
+0x080483a7 &lt;main+51&gt;: ret
+End of assembler dump.
+(gdb) list
+1   #include &lt;stdio.h&gt;
+2
+3   int main()
+4   {
+5     int i;
+<strong><em>6     for(i=0; i < 10; i++)</em></strong>
+7     {
+<em>8       printf("Hello, world!\n");</em>
+9     }
+10  }
+(gdb)
+</pre>
+
+The instructions shown in bold make up the for loop, and the instructions in italics are the _printf()_ call found within the loop. The program execution will jump back to the compare instruction, continue to execute the _printf()_ call, and increment the counter variable until it finally equals 10. At this point the conditional _jle_ instruction won't execute; instead, the instruction pointer will continue to the unconditional jump instruction, which exits the loop and ends the program.
