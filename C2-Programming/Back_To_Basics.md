@@ -248,4 +248,486 @@ int main()
 }
 ```
 
-As the comment in the code indicate, the first pointer is set at the beginning of the character array. When the character array is referenced like this, it is actually a pointer itself.
+As the comment in the code indicate, the first pointer is set at the beginning of the character array. When the character array is referenced like this, it is actually a pointer itself. This is how this buffer was passed as a pointer to the _printf()_ and _strcpy()_ functions earlier. The second pointer is set to the first pointer's address plus two, and then some things are printed (shown in the output below).
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -o pointer pointer.c
+reader@hacking:~/booksrc $ ./pointer
+Hello, world!
+llo, world!
+Hey you guys!
+reader@hacking:~/booksrc $
+</pre>
+
+Let's take a look at this with GDB. The program is recompiled, and a breakpoint is set on the tenth line of the source code. This will stop the program after the _"Hello, world!\n"_ string has been copied into the _str_a_ buffer and the pointer variable is set to the beginning of it.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -g -o pointer pointer.c
+reader@hacking:~/booksrc $ gdb -q ./pointer
+Using host libthread_db library "/lib/tls/i686/cmov/libthread_db.so.1".
+(gdb) list
+1   #include &lt;stdio.h&gt;
+2   #include &lt;string.h&gt;
+3
+4   int main() {
+5       char str_a[20]; // A 20-element character array
+6       char* pointer;  // A pointer, meant for a character array
+7       char* pointer2; // And yet another one
+8
+9       strcpy(str_a, "Hello, world!\n");
+10      pointer = str_a; // Set the first pointer to the start of the array.
+(gdb)
+11      printf(pointer);
+12
+13      pointer2 = pointer + 2; // Set the second one 2 bytes further in.
+14      printf(pointer2); // Print it.
+15      strcpy(pointer2, "y you guys!\n"); // Copy into that spot.
+16      printf(pointer); // Print again.
+17  }
+(gdb) break 11
+Breakpoint 1 at 0x80483dd: file pointer.c, line 11.
+(gdb) run
+Starting program: /home/reader/booksrc/pointer
+
+Breakpoint 1, main () at pointer.c:11
+11 printf(pointer);
+(gdb) x/xw pointer
+0xbffff7e0: 0x6c6c6548
+(gdb) x/s pointer
+0xbffff7e0: "Hello, world!\n"
+(gdb)
+</pre>
+
+When the pointer is examined as a string, it's apparent that the given string is there and is located at memory address _0xbffff7e0_. Remember that the string itself isn't stored in the pointer variable, only the memory address _0xbffff7e0_ is stored there.
+
+In order to see the actual data stored in the pointer variable, you must use the __address-of operator__. The _address-of operator_ is a _unary operator_, which simply means it operates on a single argument. This operator is just an ampersand (__&__) prepended to a variable name. When it's used, the address of that variable is returned, instead of the variable itself. This operator exists both in GDB and in the C programming language.
+
+<pre style="color: white;">
+(gdb) x/xw &pointer
+0xbffff7dc: 0xbffff7e0
+(gdb) print &pointer
+$1 = (char **) 0xbffff7dc
+(gdb) print pointer
+$2 = 0xbffff7e0 "Hello, world!\n"
+(gdb)
+</pre>
+
+When the _address-of operator_ is used, the pointer variable is shown to be located at the address _0xbffff7dc_ in memory, and it contains the address _0xbffff7e0_.
+
+When the _address-of operator_ is often used in conjunction with pointers, since pointers contain memory addresses. The _addressof.c_ program demonstrates the _address-of operator_ being used to put the address of an integer variable into a pointer. This line is shown in bold below.
+
+__addressof.c__
+
+```c
+#include <stdio.h>
+
+int main()
+{
+    int int_var = 5;
+    int* int_ptr;
+
+    int_ptr = &int_var; // Put the address of int_var into int_ptr
+}
+```
+
+The program itself doesn't actually output anything, but you can probably guess what happens, even before debugging with GDB.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -g addressof.c
+reader@hacking:~/booksrc $ gdb -q ./a.out
+Using host libthread_db library "/lib/tls/i686/cmov/libthread_db.so.1".
+(gdb) list
+1   #include &lt;stdio.h&gt;
+2
+3   int main() {
+4       int int_var = 5;
+5       int* int_ptr;
+6
+7       int_ptr = &int_var; // Put the address of int_var into int_ptr.
+8   }
+(gdb) break 8
+Breakpoint 1 at 0x8048361: file addressof.c, line 8.
+(gdb) run
+Starting program: /home/reader/booksrc/a.out
+
+Breakpoint 1, main () at addressof.c:8
+8   }
+(gdb) print int_var
+$1 = 5
+(gdb) print &int_var
+$2 = (int *) 0xbffff804
+(gdb) print int_ptr
+$3 = (int *) 0xbffff804
+(gdb) print &int_ptr
+$4 = (int **) 0xbffff800
+(gdb)
+</pre>
+
+As usual, a breakpoint is set and the program is executed in the debugger. At this point the majority of the program has executed. The first _print_ command shows the value of _int_var_, and the second shows its address using the _address-of operator_. The next two print commands show that _int_ptr_ contains the address of _int_var_, and they also show the address of the _int_ptr_ for good measure.
+
+An additional unary operator called the __dereference operator__ exists for use with pointers. This operator will return the data found in the address the pointer is pointing to, instead of the address itself. It takes the form of an asterisk in front of the variable name, similar to the declaration of a pointer. Once again, the _dereference operator_ exists both in GDB and in C. Used in GDB, it can retrieve the integer value _int_ptr_ points to.
+
+<pre style="color: white;">
+(gdb) print *int_ptr
+$5 = 5
+</pre>
+
+A few additions to the _addressof.c_ code (shown in _addressof2.c_) will demonstrate all of these concepts. The added _printf()_ functions use format parameters, which I'll explain in the next section. For now, just focus on the program's output.
+
+__addressof2.c__
+
+```c
+#include <stdio.h>
+
+int main()
+{
+    int int_var = 5;
+    int* int_ptr;
+
+    int_ptr = &int_var; // Put the address of int_var into int_ptr
+
+    printf("int_ptr = 0x%08x\n", int_ptr);
+    printf("&int_ptr = 0x%08x\n", &int_ptr);
+    printf("*int_ptr = 0x%08x\n\n", *int_ptr);
+
+    printf("int_var is located at 0x%08x and contains %d\n", &int_var, int_var);
+    printf("int_ptr is located at 0x%08x, contains 0x%08x, and points to %d\n\n",
+        &int_ptr, int_ptr, *int_ptr);
+}
+```
+
+The result of compiling and executing _addressof2.c_ are as follows.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc addressof2.c
+reader@hacking:~/booksrc $ ./a.out
+int_ptr = 0xbffff834
+&int_ptr = 0xbffff830
+*int_ptr = 0x00000005
+int_var is located at 0xbffff834 and contains 5
+int_ptr is located at 0xbffff830, contains 0xbffff834, and points to 5
+reader@hacking:~/booksrc $
+</pre>
+
+When the unary operators are used with pointers, the _address-of operator_ can be thought of as moving backward, while the dereference operator moves forward in the direction the pointer is pointing.
+
+### *__Format Strings__*
+
+The _printf()_ function can be used to print more than just fixed strings. This function can also use format strings to print variables in many different formats. A _format string_ is just a character string with special escape sequences that tell the function to insert variables printed in a specific format in place of the escape sequence. The way the _printf()_ function has been used in the previous programs, the _"Hello, world!\n"_ string technically is the format string; however, it is devoid of special escape sequences. These _escape sequences_ are also called _format parameters_, and for each one found in the format string, the function is expected to take an additional argument. Each format parameter begins with a percent sign (_%_) and uses a single-character shorthand very similar to formatting characters used by GDB's examine command.
+
+<div align="left" width="100%">
+<img src="Value_Format_Parameters.png?raw=true" alt="Value Format Parameters" width="40%">
+</div>
+
+All of the preceding _format parameters_ receive their data as values, not pointers to values. There are also some format parameters that expect pointers, such as the following.
+
+<div align="left" width="100%">
+<img src="Pointer_Format_Parameters.png?raw=true" alt="Pointer Format Parameters" width="50%">
+</div>
+
+The __%s__ format parameter expects to be given a memory address; it prints the data at that memory address until a null byte is encountered. The __%n__ format parameter is unique in that it actually writes data. It also expects to be given a memory address, and it writes the number of bytes that have been written so far into that memory address.
+
+For now, our focus will just be the format parameters used for displaying data. The _fmt_strings.c_ program shows some examples of different format parameters.
+
+__fmt_strings.c__
+
+```c
+#include <stdio.h>
+
+int main()
+{
+    char string[10];
+    int A = -73;
+    unsigned int B = 31337;
+
+    strcpy(string, "sample");
+    // Example of printing with different format string
+    printf("[A] Dec: %d, Hex: %x, Unsigned: %u\n", A, A, A);
+    printf("[B] Dec: %d, Hex: %x, Unsigned: %u\n", B, B, B);
+    printf("[field width on B] 3: '%3u', 10: '%10u', '%08u'\n", B, B, B);
+    printf("[string] %s Address %08x\n", string, string);
+    // Example of unary address operator (dereferencing) and a %x format string
+    printf("variable A is at address: %08x\n", &A);
+}
+```
+
+In the preceding code, additional variable arguments are passed to each _printf()_ call for every format parameter in the format string. The final _printf()_ call uses the argument __&A__, which will provide the address of the variable __A__. The program's compilation and execution are as follows.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -o fmt_strings fmt_strings.c
+reader@hacking:~/booksrc $ ./fmt_strings
+[A] Dec: -73, Hex: ffffffb7, Unsigned: 4294967223
+[B] Dec: 31337, Hex: 7a69, Unsigned: 31337
+[field width on B] 3: '31337', 10: '     31337', '00031337'
+[string] sample Address bffff870
+variable A is at address: bffff86c
+reader@hacking:~/booksrc $
+</pre>
+
+The first two calls to _printf()_ demonstrate the printing of variables __A__ and __B__, using different format parameters. Since there are three format parameters in each line, the variables _A_ and _B_ need to be supplied three times each. The __%d__ format parameter allows for negative values, while __%u__ does not, since it is expecting unsigned values.
+
+When the variable _A_ is printed using the _%u_ format parameter, it appears as a very high value. This is because _A_ is a negative number store in two's complement , and the format parameter is trying to print it as if it were an unsigned value. Since two's complement flips all the bits and adds one, the very high bits that used to be zero are now one.
+
+The third line in the example, labeled _[field width on B]_, shows the use fo the field-width option in a format parameter. This is just an integer that designates the minimum field width for that format parameter. However, this is not a maximum field width, if the value to be outputted is greater than the field width, the field width will be exceeded. This happens when _3_ is used, since the output data needs 5 bytes. When _10_ is used as the field width, 5 bytes of blank space are outputted before the output data. Additionally, if a field width value begins with a 0, this means the field should be padded with zeroes. When _08_ is used, for example, the output is _00031337_.
+
+The fourth line, labeled _[string]_, simply shows the use of the __%s__ format parameter. Remember that the variable string is actually a pointer containing the address of the string, which works out wonderfully, since the _%s_ format parameter expects its data to be passed by reference.
+
+The final line just shows the address of the variable __A__, using the unary address operator to dereference the variable. This value is displayed as eight hexadecimal digits, padded by zeros.
+
+As these examples show, you should use _%d_ for decimal, _%u_ for unsigned, and _%x_ for hexadecimal values. Minimum field widths can be set by putting a number right after the percent sign, and if the field width begins with 0, it will be padded with zeros. The _%s_ parameter can be used to print strings and should be passed the address of the string. So far, so good.
+
+Format strings are used by an entire family of standard I/O functions, including _scanf()_, which basically works like _printf()_ but is used for input instead of output. One key difference is that the _scanf()_ function expects all of his arguments to be pointers, so the arguments must actually be variable addresses, not the variables themselves. This can be done using pointer variables or by using the unary address operator to retrieve the address of the normal variables. The _intput.c_ program and execution should help explain.
+
+__input.c__
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main()
+{
+    char message[10];
+    int count, i;
+
+    strcpy(message, "Hello, world!");
+
+    printf("Repeat how many times? ");
+    scanf("%d", &count);
+
+    for (i = 0; i < count; i++)
+        printf("%3d - %s\n", i, message);
+}
+```
+
+In _input.c_, the _scanf()_ function is used to set the __count__ variable. The output below demonstrates its use.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -o input input.c
+reader@hacking:~/booksrc $ ./input
+Repeat how many times? 3
+    0 - Hello, world!
+    1 - Hello, world!
+    2 - Hello, world!
+reader@hacking:~/booksrc $ ./input
+Repeat how many times? 12
+    0 - Hello, world!
+    1 - Hello, world!
+    2 - Hello, world!
+    3 - Hello, world!
+    4 - Hello, world!
+    5 - Hello, world!
+    6 - Hello, world!
+    7 - Hello, world!
+    8 - Hello, world!
+    9 - Hello, world!
+    10 - Hello, world!
+    11 - Hello, world!
+reader@hacking:~/booksrc $
+</pre>
+
+Format strings are used quite often, so familiarity with them is valuable. In addition, the ability to output the values of variables allows for debugging in the program, without the use of a debugger. Having some form of immediate feedback is fairly vital to the hacker's learning process, and something as simple as printing the value of a variable can allow for lots of exploitation,
+
+### *__Typecasting__*
+
+_Typecasting_ is simply a way to temporarily change a variables' data type, despite how iut was originally defined. When a variable is typecast into a different type, the compiler is basically told to treat that variable as if it were the new data type, but only for that operation. The syntax for typecasting is as follows:
+
+<pre style="color: white;">
+(typecast_data_type) variable
+</pre>
+
+This can be done when dealing with integers and floating-point variables, as _typecasting.c_ demonstrates.
+
+__typecasting.c__
+
+```c
+#include <stdio.h>
+
+int main()
+{
+    int a, b;
+    float c, d;
+
+    a = 13;
+    b = 5;
+
+    c = a / b;                 // Divide using integers.
+    d = (float) a / (float) b; // Divide integers typecast as floats.
+
+    printf("[integers]\t a = %d\t b = %d\n", a, b);
+    printf("[floats]\t c = %f\t d = %f\n", c, d);
+}
+```
+
+The results of compiling and executing _typecasting.c_ are as follows.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc typecasting.c
+reader@hacking:~/booksrc $ ./a.out
+[integers] a = 13 b = 5
+[floats] c = 2.000000 d = 2.600000
+reader@hacking:~/booksrc $
+</pre>
+
+As discussed earlier, diving the integer _13_ by _5_ will round down to the incorrect answer of _2_, even if this value is being stored into a floating-point variable. However, if these integer variables are typecast into floats, they will be treated as such. This allows for the correct calculation of _2.6_.
+
+This example is illustrative, but where typecasting really shines iw when it is used with pointer variables. Even though a pointer is just a memory address, the C compiler still demands a data type for every pointer. One reason for this is to try to limit programming errors. An integer pointer should only point to integer data, while a character pointer should only point to character data. Another reason is for pointer arithmetic. An integer is four bytes in size, while a character only takes up a single byte. The _pointer_types.c_ program will demonstrate and explain these concepts further. This code uses the format parameter __%p__ to output memory addresses. This is shorthand meant for displaying pointers and is basically equivalent to _0x%08x_.
+
+__pointer_types.c__
+
+```c
+#include <stdio.h>
+
+int main() 
+{
+    int i;
+
+    char char_array[5] = {'a', 'b', 'c', 'd', 'e'};
+    int int_array[5] = {1, 2, 3, 4, 5};
+
+    char* char_pointer;
+    int* int_pointer;
+
+    char_pointer = char_array;
+    int_pointer = int_array;
+
+    // Iterate through the int array with the int_pointer.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[integer pointer] points to %p, which contains the integer %d\n",
+            int_pointer, *int_pointer);
+        int_pointer = int_pointer + 1;
+    }
+
+    // Iterate through the char array with the char_pointer.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[char pointer] points to %p, which contains the char '%c'\n",
+            char_pointer, *char_pointer);
+        char_pointer = char_pointer + 1;
+    }
+}
+```
+
+In this code two arrays are defined in memory, one containing integer data and the other containing character data. Two pointers are also defined, one with the integer data type and one with the character data type, and they are set to point at the start of the corresponding data arrays. Two separate for loops iterate through the arrays using pointer arithmetic to adjust the pointer to point at the next value. In the loops, when the integer and character values are actually printed with the __%d__ and __%d__ format parameters, notice that the corresponding _printf()_ arguments must dereference the pointer variables. This is done using the _unary * operator_.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc pointer_types.c
+reader@hacking:~/booksrc $ ./a.out
+[integer pointer] points to 0xbffff7f0, which contains the integer 1
+[integer pointer] points to 0xbffff7f4, which contains the integer 2
+[integer pointer] points to 0xbffff7f8, which contains the integer 3
+[integer pointer] points to 0xbffff7fc, which contains the integer 4
+[integer pointer] points to 0xbffff800, which contains the integer 5
+[char pointer] points to 0xbffff810, which contains the char 'a'
+[char pointer] points to 0xbffff811, which contains the char 'b'
+[char pointer] points to 0xbffff812, which contains the char 'c'
+[char pointer] points to 0xbffff813, which contains the char 'd'
+[char pointer] points to 0xbffff814, which contains the char 'e'
+reader@hacking:~/booksrc $
+</pre>
+
+Even though the same value of 1 is added to __int_pointer__ and __char_pointer__ in their respective loops, the compiler increments the pointer's addresses by different amounts. Since a char is only 1 byte, the pointer to the next char would naturally also by 1 byte over. But since an integer is 4 bytes, a pointer to the next integer has to be 4 bytes over.
+
+In _pointer_types2.c_, the pointers are juxtaposed such that the __int_pointer__ points to the character data and vice versa.
+
+__pointer_types2.c__
+
+```c
+#include <stdio.h>
+
+int main() 
+{
+    int i;
+    char char_array[5] = {'a', 'b', 'c', 'd', 'e'};
+    int int_array[5] = {1, 2, 3, 4, 5};
+
+    char* char_pointer;
+    int* int_pointer;
+
+    char_pointer = int_array; // The char_pointer and int_pointer now
+    int_pointer = char_array; // point to incompatible data types.
+
+    // Iterate through the int array with the int_pointer.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[integer pointer] points to %p, which contains the char '%c'\n",
+            int_pointer, *int_pointer);
+        int_pointer = int_pointer + 1;
+    }
+
+    // Iterate through the char array with the char_pointer.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[char pointer] points to %p, which contains the integer %d\n",
+            char_pointer, *char_pointer);
+        char_pointer = char_pointer + 1;
+    }
+}
+```
+
+The output below shows the warning spewed forth from the compiler.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc pointer_types2.c
+pointer_types2.c: In function `main':
+pointer_types2.c:12: warning: assignment from incompatible pointer type
+pointer_types2.c:13: warning: assignment from incompatible pointer type
+reader@hacking:~/booksrc $
+</pre>
+
+In an attempt to prevent programming mistakes, the compiler gives warnings about pointers that point to incompatible data types. But the compiler and perhaps the programmer are the only ones that care about a pointer's type. In the compiled code, a pointer is nothing more than a memory address, so the compiler will still compile the code if a pointer points to an incompatible data type, it simply warns the programmer to anticipate unexpected results.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ ./a.out
+[integer pointer] points to 0xbffff810, which contains the char 'a'
+[integer pointer] points to 0xbffff814, which contains the char 'e'
+[integer pointer] points to 0xbffff818, which contains the char '8'
+[integer pointer] points to 0xbffff81c, which contains the char '
+[integer pointer] points to 0xbffff820, which contains the char '?'
+[char pointer] points to 0xbffff7f0, which contains the integer 1
+[char pointer] points to 0xbffff7f1, which contains the integer 0
+[char pointer] points to 0xbffff7f2, which contains the integer 0
+[char pointer] points to 0xbffff7f3, which contains the integer 0
+[char pointer] points to 0xbffff7f4, which contains the integer 2
+reader@hacking:~/booksrc $
+</pre>
+
+Even though the __int_pointer__ points to character data that only contains 5 bytes of data, it is still typed as an integer. This means that adding 1 to the pointer will increment the address by 4 each time. Similarly, the __char_pointer__'s address is only incremented by 1 each time, stepping through the 20 bytes of integer data (five 4-byte integers), one byte at a time. Once again, the little-endian byte order of the integer data is apparent when the 4-byte integer is examined one byte at a time. The 4-byte value of _0x00000001_ is actually stored in memory as _0x01_, _0x00_ _0x00_, _0x00_.
+
+There will be situations like this in which you are using a pointer that points to data with a conflicting type. Since the pointer type determines the size of the data it points to, it's important that the type is correct. As you can see in _pointer_types3.c_ below, typecasting is just a way to change the type of a variable on the fly.
+
+__pointer_types3.c__
+
+```c
+#include <stdio.h>
+
+int main() 
+{
+    int i;
+    char char_array[5] = {'a', 'b', 'c', 'd', 'e'};
+    int int_array[5] = {1, 2, 3, 4, 5};
+
+    char* char_pointer;
+    int* int_pointer;
+
+    char_pointer = (char*) int_array; // Typecast into the
+    int_pointer = (int*) char_array;  // pointer's data type.
+
+    // Iterate through the int array with the int_pointer.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[integer pointer] points to %p, which contains the char '%c'\n",
+            int_pointer, *int_pointer);
+        int_pointer = (int*) ((char*) int_pointer + 1);
+    }
+
+    // Iterate through the char array with the char_pointer.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[char pointer] points to %p, which contains the integer %d\n",
+            char_pointer, *char_pointer);
+        char_pointer = (char*) ((int*) char_pointer + 1);
+    }
+}
+```
+
