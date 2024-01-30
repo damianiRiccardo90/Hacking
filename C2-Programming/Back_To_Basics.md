@@ -731,3 +731,222 @@ int main()
 }
 ```
 
+In this code, when the pointers are initially set, the data is typecast into the pointer's data type. This will prevent the C compiler from complaining about the conflicting data types; however, any pointer arithmetic will still be incorrect. To fix that, when 1 is added to the pointers, they must first be typecast into the correct data type so the address is incremented by the correct amount. Then this pointer needs to be typecast back into the pointer's data type once again. It doesn't look too pretty, but it works.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc pointer_types3.c
+reader@hacking:~/booksrc $ ./a.out
+[integer pointer] points to 0xbffff810, which contains the char 'a'
+[integer pointer] points to 0xbffff811, which contains the char 'b'
+[integer pointer] points to 0xbffff812, which contains the char 'c'
+[integer pointer] points to 0xbffff813, which contains the char 'd'
+[integer pointer] points to 0xbffff814, which contains the char 'e'
+[char pointer] points to 0xbffff7f0, which contains the integer 1
+[char pointer] points to 0xbffff7f4, which contains the integer 2
+[char pointer] points to 0xbffff7f8, which contains the integer 3
+[char pointer] points to 0xbffff7fc, which contains the integer 4
+[char pointer] points to 0xbffff800, which contains the integer 5
+reader@hacking:~/booksrc $
+</pre>
+
+Naturally, it is far easier just to use the correct data type for pointers in the first place; however, sometimes a generic, typeless pointer is desired. In C, a void pointer is a typeless pointer, defined by the __void__ keyword.
+
+Experimenting with void pointers quickly reveals a few things about typeless pointers. First, pointers cannot be dereferenced unless they have a type. In order to retrieve the value stored in the pointer's memory address, the compiler must first know what type of data it is. Secondly, void pointes must also be typecast before doing pointer arithmetic. These are fairly intuitive limitations, which means that a void pointer's main purpose is to simply hold a memory address.
+
+The _pointer_types3.c_ program can be modified to use a single void pointer by typecasting it to the proper type each time it's used. The compiler knows that a void pointer is typeless, so any type of pointer can be stored in a void pointer without typecasting. This also means a void pointer must always be typecast when dereferencing it, however. These differences can be seen in _pointer_types4.c_, which uses a void pointer.
+
+___pointer_types3.c__
+
+```c
+#include <stdio.h>
+
+int main() 
+{
+    int i;
+
+    char char_array[5] = {'a', 'b', 'c', 'd', 'e'};
+    int int_array[5] = {1, 2, 3, 4, 5};
+
+    void* void_pointer;
+
+    void_pointer = (void*) char_array;
+
+    // Iterate through the int array with the int_pointer.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[char pointer] points to %p, which contains the char '%c'\n",
+            void_pointer, *((char*) void_pointer));
+        void_pointer = (void*) ((char*) void_pointer + 1);
+    }
+
+    void_pointer = (void*) int_array;
+
+    // Iterate through the int array with the int_pointer.
+    for(i = 0; i < 5; i++) 
+    {
+        printf("[integer pointer] points to %p, which contains the integer %d\n",
+            void_pointer, *((int*) void_pointer));
+        void_pointer = (void*) ((int*) void_pointer + 1);
+    }
+}
+```
+
+The results of compiling and executing _pointer_types4.c_ are as follows.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc pointer_types4.c
+reader@hacking:~/booksrc $ ./a.out
+[char pointer] points to 0xbffff810, which contains the char 'a'
+[char pointer] points to 0xbffff811, which contains the char 'b'
+[char pointer] points to 0xbffff812, which contains the char 'c'
+[char pointer] points to 0xbffff813, which contains the char 'd'
+[char pointer] points to 0xbffff814, which contains the char 'e'
+[integer pointer] points to 0xbffff7f0, which contains the integer 1
+[integer pointer] points to 0xbffff7f4, which contains the integer 2
+[integer pointer] points to 0xbffff7f8, which contains the integer 3
+[integer pointer] points to 0xbffff7fc, which contains the integer 4
+[integer pointer] points to 0xbffff800, which contains the integer 5
+reader@hacking:~/booksrc $
+</pre>
+
+The compilation and output of this _pointer_types4.c_ is basically the same as that for _pointer_types3.c_. The void pointer is really just holding the memory addresses, while the hard-coded typecasting is telling the compiler to use the proper types whenever the pointer is used.
+
+Since the type is taken care of by the typecasts, the void pointer is truly nothing more than a memory address. With the data types defined by typecasting, anything that is big enough to hold a four-byte value can work the same way as a void pointer. In _pointer_types5._, an unsigned integer is used to store this address.
+
+__pointer_types5.__
+
+```c
+#include <stdio.h>
+
+int main() 
+{
+    int i;
+
+    char char_array[5] = {'a', 'b', 'c', 'd', 'e'};
+    int int_array[5] = {1, 2, 3, 4, 5};
+
+    unsigned int hacky_nonpointer;
+
+    hacky_nonpointer = (unsigned int) char_array;
+
+    // Iterate through the int array with the int_pointer.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[hacky_nonpointer] points to %p, which contains the char '%c'\n",
+            hacky_nonpointer, *((char*) hacky_nonpointer));
+        hacky_nonpointer = hacky_nonpointer + sizeof(char);
+    }
+
+    hacky_nonpointer = (unsigned int) int_array;
+
+    // Iterate through the int array with the int_pointer.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[hacky_nonpointer] points to %p, which contains the integer %d\n",
+            hacky_nonpointer, *((int*) hacky_nonpointer));
+        hacky_nonpointer = hacky_nonpointer + sizeof(int);
+    }
+}
+```
+
+This is rather hacky, but since this integer value is typecast into the proper pointer types when it is assigned and dereferenced, the end result is the same. Notice that instead of typecasting multiple times to do pointer arithmetic on an unsigned integer (which isn't even a pointer), the _sizeof()_ function is used to achieve the same result using normal arithmetic.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc pointer_types5.c
+reader@hacking:~/booksrc $ ./a.out
+[hacky_nonpointer] points to 0xbffff810, which contains the char 'a'
+[hacky_nonpointer] points to 0xbffff811, which contains the char 'b'
+[hacky_nonpointer] points to 0xbffff812, which contains the char 'c'
+[hacky_nonpointer] points to 0xbffff813, which contains the char 'd'
+[hacky_nonpointer] points to 0xbffff814, which contains the char 'e'
+[hacky_nonpointer] points to 0xbffff7f0, which contains the integer 1
+[hacky_nonpointer] points to 0xbffff7f4, which contains the integer 2
+[hacky_nonpointer] points to 0xbffff7f8, which contains the integer 3
+[hacky_nonpointer] points to 0xbffff7fc, which contains the integer 4
+[hacky_nonpointer] points to 0xbffff800, which contains the integer 5
+reader@hacking:~/booksrc $
+</pre>
+
+The important thing to remember about variables in C is that the compiler is the only thing that cares about a variable's type. In the end, after the program has been compiled, the variables are nothing more than memory addresses. This means that variables of one type can easily be coerced into behaving like another type by telling the compiler to typecast them into the desired type.
+
+### *__Command-Line Arguments__*
+
+Many nongraphical programs receive input in the form of command-line arguments. Unlike inputting with _scanf()_, command-line arguments don't require user interaction after the program has begun execution. This tends to be more efficient and is a useful input method.
+
+In C, command-line arguments can be accessed in the _main()_ function by including two additional arguments to the function: An integer and a pointer to an array of strings. The integer will contain the number of arguments, and the array of strings will contain each of those arguments. The _commandline.c_ program and its execution should explain things.
+
+__commandline.c__
+
+```c
+#include <stdio.h>
+
+int main(int arg_count, char* arg_list[])
+{
+    int i;
+    printf("There were %d arguments provided:\n", arg_count);
+    for (i = 0; i < arg_count; i++)
+    {
+        printf("argument #%d\t-\t%s\n", i, arg_list[i]);
+    }
+}
+```
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -o commandline commandline.c
+reader@hacking:~/booksrc $ ./commandline
+There were 1 arguments provided:
+argument #0 - ./commandline
+reader@hacking:~/booksrc $ ./commandline this is a test
+There were 5 arguments provided:
+argument #0 - ./commandline
+argument #1 - this
+argument #2 - is
+argument #3 - a
+argument #4 - test
+reader@hacking:~/booksrc $
+</pre>
+
+The zeroth argument is always the name of the executing binary, and the rest of the argument array (often called an _argument vector_) contains the remaining arguments as strings.
+
+Sometimes a program will want to use a command-line argument as an integer as opposed to a string. Regardless of this, the argument is passed in as a string; however, there are standard conversion functions. Unlike simple typecasting, these functions can actually convert character arrays containing numbers into actual integers. The most common of these functions is __atoi()__, which is short for _ASCII to integer_. This function accepts a pointer to a string as its argument and returns the integer value it represents. Observe its usage in _convert.c_.
+
+__convert.c__
+
+```c
+#include <stdio.h>
+
+void usage(char* program_name) 
+{
+    printf("Usage: %s <message> <# of times to repeat>\n", program_name);
+    exit(1);
+}
+
+int main(int argc, char* argv[])
+{
+    int i, count;
+
+    if (argc < 3)       // If fewer than 3 arguments are used,
+        usage(argv[0]); // display usage message and exit.
+    
+    count = atoi(argv[2]); // Convert the 2nd arg into an integer.
+    printf("Repeating %d times..\n", count);
+
+    for (i = 0; i < count; i++)
+        printf("%3d - %s\n", i, argv[1]); // Print the 1st arg.
+}
+```
+
+The result of compiling and executing _convert.c_ are as follows.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc convert.c
+reader@hacking:~/booksrc $ ./a.out
+Usage: ./a.out &lt;message&gt; &lt;# of times to repeat&gt;
+60 0x200
+reader@hacking:~/booksrc $ ./a.out 'Hello, world!' 3
+Repeating 3 times..
+0 - Hello, world!
+1 - Hello, world!
+2 - Hello, world!
+reader@hacking:~/booksrc $
+</pre>
