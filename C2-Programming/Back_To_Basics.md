@@ -942,7 +942,6 @@ The result of compiling and executing _convert.c_ are as follows.
 reader@hacking:~/booksrc $ gcc convert.c
 reader@hacking:~/booksrc $ ./a.out
 Usage: ./a.out &lt;message&gt; &lt;# of times to repeat&gt;
-60 0x200
 reader@hacking:~/booksrc $ ./a.out 'Hello, world!' 3
 Repeating 3 times..
 0 - Hello, world!
@@ -950,3 +949,275 @@ Repeating 3 times..
 2 - Hello, world!
 reader@hacking:~/booksrc $
 </pre>
+
+In the preceding code, an _if_ statement makes sure that three arguments are used before these strings are accessed. If the program tries to access memory that doesn't exist or that the program doesn't have permission to read, the program will crash. In C it's important to check for these types of conditions and handle them in program logic. If the error-checking _if_ statement is commented out, this memory violation can be explored. The _convert2.c_ program should make this more clear.
+
+__convert2.c__
+
+```c
+#include <stdio.h>
+
+void usage(char* program_name) 
+{
+    printf("Usage: %s <message> <# of times to repeat>\n", program_name);
+    exit(1);
+}
+
+int main(int argc, char* argv[])
+{
+    int i, count;
+
+//  if(argc < 3)        // If fewer than 3 arguments are used,
+//      usage(argv[0]); // display usage message and exit.
+
+    count = atoi(argv[2]); // Convert the 2nd arg into an integer.
+    printf("Repeating %d times..\n", count);
+
+    for (i = 0; i < count; i++)
+        printf("%3d - %s\n", i, argv[1]); // Print the 1st arg.
+}
+```
+
+The results of compiling and executing _convert2.c_ are as follows.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc convert2.c
+reader@hacking:~/booksrc $ ./a.out test
+Segmentation fault (core dumped)
+reader@hacking:~/booksrc $
+</pre>
+
+When the program isn't given enough command-line arguments, it still tries to access elements of the argument array, even though they don't exist. This results in the program crashing due to a segmentation fault.
+
+Memory is split into segments (which will be discussed later), and some memory addresses aren't within the boundaries of the memory segments the program is given access to. WHen the program attempts to access an address that is out of bounds, it will crash and die in what's called a _segmentation fault_. This effect can be explored further with GDB.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -g convert2.c
+reader@hacking:~/booksrc $ gdb -q ./a.out
+Using host libthread_db library "/lib/tls/i686/cmov/libthread_db.so.1".
+(gdb) run test
+Starting program: /home/reader/booksrc/a.out test
+
+Program received signal SIGSEGV, Segmentation fault.
+0xb7ec819b in ?? () from /lib/tls/i686/cmov/libc.so.6
+(gdb) where
+#0 0xb7ec819b in ?? () from /lib/tls/i686/cmov/libc.so.6
+#1 0xb800183c in ?? ()
+#2 0x00000000 in ?? ()
+(gdb) break main
+Breakpoint 1 at 0x8048419: file convert2.c, line 14.
+(gdb) run test
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /home/reader/booksrc/a.out test
+
+Breakpoint 1, main (argc=2, argv=<strong><em>0xbffff894</em></strong>) at convert2.c:14
+14 count = atoi(argv[2]); // convert the 2nd arg into an integer
+(gdb) cont
+Continuing.
+
+Program received signal SIGSEGV, Segmentation fault.
+0xb7ec819b in ?? () from /lib/tls/i686/cmov/libc.so.6
+(gdb) x/3xw 0xbffff894
+0xbffff894: 0xbffff9b3 0xbffff9ce 0x00000000
+(gdb) x/s 0xbffff9b3
+0xbffff9b3: "/home/reader/booksrc/a.out"
+(gdb) x/s 0xbffff9ce
+0xbffff9ce: "test"
+(gdb) x/s 0x00000000
+0x0: &lt;Address 0x0 out of bounds&gt;
+(gdb) quit
+The program is running. Exit anyway? (y or n) y
+reader@hacking:~/booksrc $
+</pre>
+
+The program is executed with a single command-line argument of _test_ within GDB, which causes the program to crash. The __where__ command will sometimes show a useful backtrace of the stack; however, in this case, the stack was too badly mangled in the crash. A breakpoint is set on main and the program is re-executed to get the value of the argument vector (shown in bold). Since the argument vector is a pointer to a list of strings, it is actually a pointer to a list of pointers. Using the command _x/3xw_ to examine the first three memory addresses stored at the argument vector's address shows that they are themselves pointers to strings. The first one is the zeroth argument, the second is the _test_ argument, and the third is zero, which is out of bounds. When the program tries to access this memory address, it crashes with a segmentation fault.
+
+### *__Variable Scoping__*
+
+Another interesting concept regarding memory in C is variable scoping or context, in particular, the contexts of variables within functions. Each function has its own set of local variables, which are independent of everything else. In fact, multiple calls to the same function all have their own contexts. You can use the _printf()_ function with format strings to quickly explore this; check it out in _scope.c_.
+
+__scope.c__
+
+```c
+#include <stdio.h>
+
+void func3() 
+{
+    int i = 11;
+    printf("\t\t\t[in func3] i = %d\n", i);
+}
+
+void func2() 
+{
+    int i = 7;
+    printf("\t\t[in func2] i = %d\n", i);
+    func3();
+    printf("\t\t[back in func2] i = %d\n", i);
+}
+
+void func1() 
+{
+    int i = 5;
+    printf("\t[in func1] i = %d\n", i);
+    func2();
+    printf("\t[back in func1] i = %d\n", i);
+}
+
+int main() 
+{
+    int i = 3;
+    printf("[in main] i = %d\n", i);
+    func1();
+    printf("[back in main] i = %d\n", i);
+}
+```
+
+The output of this simple program demonstrates nested function calls.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc scope.c
+reader@hacking:~/booksrc $ ./a.out
+[in main] i = 3
+        [in func1] i = 5
+                [in func2] i = 7
+                        [in func3] i = 11
+                [back in func2] i = 7
+        [back in func1] i = 5
+[back in main] i = 3
+reader@hacking:~/booksrc $
+</pre>
+
+In each function, the variable __i__ is set to a different value and printed. Notice that within the _main()_ function, the variable _i_ is _3_, even after calling _func1()_ where the variable _i_ is _5_. Similarly, within _func1()_ the variable _i_ remains _5_, even after calling _func2()_ where _i_ is _7_, and so forth. The best way to think of this is that eah function call has its own version of the variable _i_.
+
+Variables can also have a global scope, which means they will persist across all functions. Variables are global if they are defined at the beginning of the code, outside of any functions. In the _scope2.c_ example code shown below, the variable _j_ is declared globally and set to _42_. This variable can be read from and written to by any function, and the changes to it will persist between functions.
+
+___scope2__
+
+```c
+#include <stdio.h>
+
+int j = 42; // j is a global variable.
+
+void func3() 
+{
+    int i = 11, j = 999; // Here, j is a local variable of func3().
+    printf("\t\t\t[in func3] i = %d, j = %d\n", i, j);
+}
+
+void func2() 
+{
+    int i = 7;
+    printf("\t\t[in func2] i = %d, j = %d\n", i, j);
+    printf("\t\t[in func2] setting j = 1337\n");
+    j = 1337; // Writing to j
+    func3();
+    printf("\t\t[back in func2] i = %d, j = %d\n", i, j);
+}
+
+void func1() 
+{
+    int i = 5;
+    printf("\t[in func1] i = %d, j = %d\n", i, j);
+    func2();
+    printf("\t[back in func1] i = %d, j = %d\n", i, j);
+}
+
+int main() 
+{
+    int i = 3;
+    printf("[in main] i = %d, j = %d\n", i, j);
+    func1();
+    printf("[back in main] i = %d, j = %d\n", i, j);
+}
+```
+
+The results of compiling and executing _scope2.c_ are as follows.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc scope2.c
+reader@hacking:~/booksrc $ ./a.out
+[in main] i = 3, j = 42
+        [in func1] i = 5, j = 42
+                [in func2] i = 7, j = 42
+                [in func2] setting j = 1337
+                        [in func3] i = 11, j = 999
+                [back in func2] i = 7, j = 1337
+        [back in func1] i = 5, j = 1337
+[back in main] i = 3, j = 1337
+reader@hacking:~/booksrc $
+</pre>
+
+In the output, the global variable _j_ is written to in _func2()_, and the change persists in all functions except _func3()_, which has its own local variable called _j_. In this case, the compiler prefers to use the local variable. With all these variables using the same names, it can be a little confusing, but remember that in the end, it's all just memory. The global variable _j_ is just stored in memory, and every function is able to access that memory. The local variables for each function are each stored in their own places in memory, regardless of the identical names. Printing the memory addresses of these variables will give a clearer picture of what's going on, In the _scope3.c_ example code below, the variable addresses are printed using then unary address-of operator.
+
+__scope3.c__
+
+```c
+#include <stdio.h>
+
+int j = 42; // j is a global variable.
+
+void func3() 
+{
+    int i = 11, j = 999; // Here, j is a local variable of func3().
+    printf("\t\t\t[in func3] i @ 0x%08x = %d\n", &i, i);
+    printf("\t\t\t[in func3] j @ 0x%08x = %d\n", &j, j);
+}
+
+void func2() 
+{
+    int i = 7;
+    printf("\t\t[in func2] i @ 0x%08x = %d\n", &i, i);
+    printf("\t\t[in func2] j @ 0x%08x = %d\n", &j, j);
+    printf("\t\t[in func2] setting j = 1337\n");
+    j = 1337; // Writing to j
+    func3();
+    printf("\t\t[back in func2] i @ 0x%08x = %d\n", &i, i);
+    printf("\t\t[back in func2] j @ 0x%08x = %d\n", &j, j);
+}
+
+void func1() 
+{
+    int i = 5;
+    printf("\t[in func1] i @ 0x%08x = %d\n", &i, i);
+    printf("\t[in func1] j @ 0x%08x = %d\n", &j, j);
+    func2();
+    printf("\t[back in func1] i @ 0x%08x = %d\n", &i, i);
+    printf("\t[back in func1] j @ 0x%08x = %d\n", &j, j);
+}
+
+int main() 
+{
+    int i = 3;
+    printf("[in main] i @ 0x%08x = %d\n", &i, i);
+    printf("[in main] j @ 0x%08x = %d\n", &j, j);
+    func1();
+    printf("[back in main] i @ 0x%08x = %d\n", &i, i);
+    printf("[back in main] j @ 0x%08x = %d\n", &j, j);
+}
+```
+
+The results of compiling and executing _scope3.c_ are as follows.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc scope3.c
+reader@hacking:~/booksrc $ ./a.out
+[in main] i @ 0xbffff834 = 3
+[in main] j @ 0x08049988 = 42
+        [in func1] i @ 0xbffff814 = 5
+        [in func1] j @ 0x08049988 = 42
+                [in func2] i @ 0xbffff7f4 = 7
+                [in func2] j @ 0x08049988 = 42
+                [in func2] setting j = 1337
+                        [in func3] i @ 0xbffff7d4 = 11
+                        [in func3] j @ 0xbffff7d0 = 999
+                [back in func2] i @ 0xbffff7f4 = 7
+                [back in func2] j @ 0x08049988 = 1337
+        [back in func1] i @ 0xbffff814 = 5
+        [back in func1] j @ 0x08049988 = 1337
+[back in main] i @ 0xbffff834 = 3
+[back in main] j @ 0x08049988 = 1337
+reader@hacking:~/booksrc $
+</pre>
+
+In this output, it is obvious that the variable _j_ used by _func3()_ is different
