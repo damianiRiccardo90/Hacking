@@ -1,0 +1,3 @@
+# *__More Fundamental Programming Concepts__*
+
+In the following sections, more universal programming concepts will be introduced. In the following sections, more universal programming concepts will be introduced. These concepts are used in many programming languages, with a few syntactical differences. As I introduce these concepts, I will integrate them into pseudo-code examples using C-like syntax. By the end, the pseudo-code should look very similar to C code.
