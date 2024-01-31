@@ -24,7 +24,7 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
   2.1. [Section 0x210] [**What is Programming?**](C2-Programming/C2-S1-What_Is_Programming/What_Is_Programming.md)  
   2.2. [Section 0x220] [**Pseudo-code**](C2-Programming/C2-S2-Pseudo-code/Pseudo-code.md)  
   2.3. [Section 0x230] [**Control Structures**](C2-Programming/C2-S3-Control_Structures/Control_Structures.md)  
-  2.3.1. Dio boiaasdasas
+    2.3.1. Dio boiaasdasas
   4. [**More Fundamental Programming Concepts**](C2-Programming/More_Fundamental_Programming_Concepts.md)
   5. [**Getting Your Hands Dirty**](C2-Programming/Getting_Your_Hands_Dirty.md)
   6. [**Back to Basics**](C2-Programming/Back_To_Basics.md) :godmode:
