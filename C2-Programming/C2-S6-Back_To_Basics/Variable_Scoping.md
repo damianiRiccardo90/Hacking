@@ -279,3 +279,84 @@ int main()
 
 The aptly named __static_var__ is defined as a static variable in two places: Within th context of _main()_ and within the context of _function()_. Since static variables are local within a particular functional context, these variables can have the same name, but they actually represent two different locations in memory. The function simply prints the values of the two variables in its context and then adds 1 to both of them. Compiling and executing this code will show the difference between the static and nonstatic variables.
 
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc static.c
+reader@hacking:~/booksrc $ ./a.out
+[in main] static_var = 1337
+    [in function] var = 5
+    [in function] static_var = 5
+[in main] static_var = 1337
+    [in function] var = 5
+    [in function] static_var = 6
+[in main] static_var = 1337
+    [in function] var = 5
+    [in function] static_var = 7
+[in main] static_var = 1337
+    [in function] var = 5
+    [in function] static_var = 8
+[in main] static_var = 1337
+    [in function] var = 5
+    [in function] static_var = 9
+reader@hacking:~/booksrc $
+</pre>
+
+Notice that the _static_var_ retains its value between subsequent calls to _function()_. This is because static variable retain their values, but also because they are only initialized once. In addition, since the static variables are local to a particular functional context, the _static_var_ in the context of _main()_ retains its value of 1337 the entire time.
+
+Once again, printing the address of these variables by dereferencing them with the unary address operator will provide greater viability into what's really going on. Take a look at _static2.c_ for an example.
+
+__static2.c__
+
+```c
+#include <stdio.h>
+
+// An example function, with its own context
+void function() 
+{
+    int var = 5;
+    static int static_var = 5; // Static variable initialization
+
+    printf("\t[in function] var @ %p = %d\n", &var, var);
+    printf("\t[in function] static_var @ %p = %d\n", &static_var, static_var);
+    var++;        // Add 1 to var.
+    static_var++; // Add 1 to static_var.
+}
+
+// The main function, with its own context
+int main() 
+{
+    int i;
+    static int static_var = 1337; // Another static, in a different context
+    
+    // loop 5 times
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[in main] static_var @ %p = %d\n", &static_var, static_var);
+        function(); // Call the function.
+    }
+}
+```
+
+The results of compiling and executing _static2.c_ are as follows.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc static2.c
+reader@hacking:~/booksrc $ ./a.out
+[in main] static_var @ 0x804968c = 1337
+    [in function] var @ 0xbffff814 = 5
+    [in function] static_var @ 0x8049688 = 5
+[in main] static_var @ 0x804968c = 1337
+    [in function] var @ 0xbffff814 = 5
+    [in function] static_var @ 0x8049688 = 6
+[in main] static_var @ 0x804968c = 1337
+    [in function] var @ 0xbffff814 = 5
+    [in function] static_var @ 0x8049688 = 7
+[in main] static_var @ 0x804968c = 1337
+    [in function] var @ 0xbffff814 = 5
+    [in function] static_var @ 0x8049688 = 8
+[in main] static_var @ 0x804968c = 1337
+    [in function] var @ 0xbffff814 = 5
+    [in function] static_var @ 0x8049688 = 9
+reader@hacking:~/booksrc $
+</pre>
+
+With the addresses of the variables displayed, it is apparent that the __static_var__ in _main()_ is different than the one found in _function()_, since they are located at different memory addresses (_0x804968c_ and _0x8049688_, respectively). You may have noticed that the addresses of the local variables all have very high addresses, like _0xbffff814_, while the global and static variables all have very low memory addresses, like _0x804968c_ and _0x8049688_. That's very astute of you, noticing details like this and asking why is one of the cornerstones of hacking. Read on for your answers.
