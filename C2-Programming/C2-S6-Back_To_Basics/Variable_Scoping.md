@@ -187,4 +187,95 @@ reader@hacking:~/booksrc $
 
 In this output, it is obvious that the variable _j_ used by _func3()_ is different than the _j_ used by the other functions. The _j_ used by _func3()_ is located at _0xbffff7d0_, while the _j_ used by the other functions is located at _0x08049988_. Also, notice that the variable _i_ is actually a different memory address for each function.
 
-In the following output, GDB is used to stop execution 
+In the following output, GDB is used to stop execution at a breakpoint in _func3()_. Then the backtrace command shows the record of each function call on the stack.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -g scope3.c
+reader@hacking:~/booksrc $ gdb -q ./a.out
+Using host libthread_db library "/lib/tls/i686/cmov/libthread_db.so.1".
+(gdb) list 1
+1   #include &lt;stdio.h&gt;
+2
+3   int j = 42; // j is a global variable.
+4
+5   void func3() {
+6       int i = 11, j = 999; // Here, j is a local variable of func3().
+7       printf("\t\t\t[in func3] i @ 0x%08x = %d\n", &i, i);
+8       printf("\t\t\t[in func3] j @ 0x%08x = %d\n", &j, j);
+9   }
+10
+(gdb) break 7
+Breakpoint 1 at 0x8048388: file scope3.c, line 7.
+(gdb) run
+Starting program: /home/reader/booksrc/a.out
+[in main] i @ 0xbffff804 = 3
+[in main] j @ 0x08049988 = 42
+[in func1] i @ 0xbffff7e4 = 5
+[in func1] j @ 0x08049988 = 42
+[in func2] i @ 0xbffff7c4 = 7
+[in func2] j @ 0x08049988 = 42
+[in func2] setting j = 1337
+Breakpoint 1, func3 () at scope3.c:7
+7 printf("\t\t\t[in func3] i @ 0x%08x = %d\n", &i, i);
+(gdb) bt
+#0 func3 () at scope3.c:7
+#1 0x0804841d in func2 () at scope3.c:17
+#2 0x0804849f in func1 () at scope3.c:26
+#3 0x0804852b in main () at scope3.c:35
+(gdb)
+</pre>
+
+The backtrace also shows the nested function calls by looking at records kept on the stack. Each time a function is called, a record called a _stack frame_ is put on the stack. Each line in the backtrace corresponds to a stack frame. Each stack frame also contains the local variables for that context. The local variables contained in each stack frame can be shown in GDB by adding the word __full__ to the backtrace command.
+
+<pre style="color: white;">
+(gdb) bt full
+#0 func3 () at scope3.c:7
+    i = 11
+    j = 999
+#1 0x0804841d in func2 () at scope3.c:17
+    i = 7
+#2 0x0804849f in func1 () at scope3.c:26
+    i = 5
+#3 0x0804852b in main () at scope3.c:35
+    i = 3
+(gdb)
+</pre>
+
+The full backtrace clearly shows that the local variable _j_ only exists in _func3()_'s context. The global version of the variable _j_ is used in the other function's contexts.
+
+In addition to globals, variables can also be defined as static variables by prepending the keyword __static__ to the variable definition. Similar to global variables, a _static variable_ remains intact between function calls; however, static variables are also akin to local variables since they remain local within a particular function context. One different and unique feature of static variables is that they are only initialized once. The code in _static.c_ will help explain these concepts.
+
+__static.c__
+
+```c
+#include <stdio.h>
+
+// An example function, with its own context
+void function() 
+{
+    int var = 5;
+    static int static_var = 5; // Static variable initialization
+
+    printf("\t[in function] var = %d\n", var);
+    printf("\t[in function] static_var = %d\n", static_var);
+    var++;        // Add one to var.
+    static_var++; // Add one to static_var.
+}
+
+// The main function, with its own context
+int main() 
+{
+    int i;
+    static int static_var = 1337; // Another static, in a different context
+
+    // Loop 5 times.
+    for (i = 0; i < 5; i++) 
+    {
+        printf("[in main] static_var = %d\n", static_var);
+        function(); // Call the function.
+    }
+}
+```
+
+The aptly named __static_var__ is defined as a static variable in two places: Within th context of _main()_ and within the context of _function()_. Since static variables are local within a particular functional context, these variables can have the same name, but they actually represent two different locations in memory. The function simply prints the values of the two variables in its context and then adds 1 to both of them. Compiling and executing this code will show the difference between the static and nonstatic variables.
+
