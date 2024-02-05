@@ -21,4 +21,28 @@ The _stack segment_ also has variable size and is used as a temporary scratch pa
 
 In general computer science terms, a _stack_ is an abstract data structure that is used frequently. It has _first-in_, _last-out_ (__FILO__) ordering, which means the first item that is put into a stack is the last item to come out of it. Think of it as putting beads on a pice of string that has a knot on one end, you can't get the first bead off until you have removed all the other beads. When an item is placed into a stack, it's known as _pushing_, and when an item is removed from a stack, it's called _popping_.
 
-As the name implies, the stack segment of memory is, in fact, a stack data structure
+As the name implies, the stack segment of memory is, in fact, a stack data structure, which contains stack frames. The _ESP_ register is used to keep track of the address of the end of the stack, which is constantly changing as items are pushed onto the into and popped off of it. Since this is very dynamic behavior, it makes sense that the stack is also not of a fixed size. Opposite to the dynamic growth of the heap, as the stack changes in size, it grows upward in a visual listing of memory, toward lower memory addresses.
+
+The _FILO_ nature of a stack might seem odd, but since the stack is used to store context, it's very useful. When a function is called, several things are pushed to the stack together in a _stack frame_. The _EBP_ register, sometimes called the _frame pointer_ (__FP__) or _local base pointer_ (__LB__), is used to reference local function variables in the current stack frame. Each stack frame contains the parameters to the function, its local variables, and two pointers that are necessary to put things back the way they were: The saved frame pointer (_SFP_) and the return address. The _SFP_ is used to restore _EBP_ to its previous value, and the _return address_ is used to restore _EIP_ to the next instruction found after the function call. This restores the functional context of the previous stack frame.
+
+The following _stack_example.c_ code has two functions: _main()_ and _test_function()_.
+
+__stack_example.c__
+
+```c
+void test_function(int a, int b, int c, int d)
+{
+    int flag;
+    char buffer[10];
+
+    flag = 31337;
+    buffer[0] = 'A';
+}
+
+int main()
+{
+    test_function(1, 2, 3, 4);
+}
+```
+
+This program first declares a test function that has four arguments, which are all declared as integers, _a_, _b_, _c_, and _d_. The local variables for the function include a single character called _flag_ and a 10-character buffer called _buffer_. The memory for these variables is in the stack segment, while the machine instructions for the function's code is stored in the text segment. After compiling the program, its inner workings can be examined with GDB. The following output shows the disassembled machine instructions for _main()_ and _test_function()_. The _main()_ function starts at _0x08048357_ and _test_function()_ starts at _0x08048344_. The first few instructions of each function (shown in bold below) set up the stack frame. These instructions are collectively called the _procedure prologue_ or _function prologue_. They save the frame pointer on the stack, and they save stack memory for the local function variables. Sometimes the function prologue will handle some stack alignment as well.
