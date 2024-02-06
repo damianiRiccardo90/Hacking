@@ -89,4 +89,20 @@ char_ptr (0x804a050) --> 'new memory'
 reader@hacking:~/booksrc $ 
 </pre>
 
-In the preceding output, notice that each block of memory has an incrementally higher memory address in the heap. Even though the firs 50 bytes were deallocated, when 15 more bytes are requested
+In the preceding output, notice that each block of memory has an incrementally higher memory address in the heap. Even though the first 50 bytes were deallocated, when 15 more bytes are requested, they are put after the 12 bytes allocated for the __int_ptr__. The heap allocation functions control this behavior, which can be explored by changing the size of the initial memory allocation.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ ./heap_example 100
+        [+] allocating 100 bytes of memory on the heap for char_ptr
+char_ptr (0x804a008) --> 'This is memory is located on the heap.'
+        [+] allocating 12 bytes of memory on the heap for int_ptr
+int_ptr (0x804a070) --> 31337
+        [-] freeing char_ptr's heap memory...
+        [+] allocating another 15 bytes for char_ptr
+char_ptr (0x804a008) --> 'new memory'
+        [-] freeing int_ptr's heap memory...
+        [-] freeing char_ptr's heap memory...
+reader@hacking:~/booksrc $
+</pre>
+
+If a larger block of memory is allocated and then deallocated, the final 15-byte allocation will occur in that freed memory space, instead. By experimenting with different values, you can figure out exactly when the allocation function chooses to reclaim freed space for new allocations. Often, simple informative _printf()_ statements and a little experimentation can reveal many things about the underlying system.
