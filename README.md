@@ -33,4 +33,6 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
     - [Paragraph 0x265] [**Typecasting**](C2-Programming/C2-S6-Back_To_Basics/Typecasting.md)  
     - [Paragraph 0x266] [**Command-Line Arguments**](C2-Programming/C2-S6-Back_To_Basics/Command-Line_Arguments.md)  
     - [Paragraph 0x267] [**Variable Scoping**](C2-Programming/C2-S6-Back_To_Basics/Variable_Scoping.md)  
-    - [Paragraph 0x268] [**Memory Segmentation**](C2-Programming/C2-S6-Back_To_Basics/Memory_Segmentation.md)  :godmode:
+  - [Section 0x270] [**Memory Segmentation**](C2-Programming/C2-S7-Memory_Segmentation/Intro.md)  
+    - [Paragraph 0x271] [**Memory Segments in C**](C2-Programming/C2-S7-Memory_Segmentation/Memory_Segments_In_C.md)  
+    - [Paragraph 0x272] [**Using the Heap**](C2-Programming/C2-S7-Memory_Segmentation/Using_The_Heap.md)  :godmode:
