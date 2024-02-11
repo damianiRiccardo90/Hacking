@@ -40,4 +40,5 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
   - [Section 0x280] [**Building on Basics**](C2-Programming/C2-S8-Building_On_Basics/Intro.md)  
     - [Paragraph 0x281] [**File Access**](C2-Programming/C2-S8-Building_On_Basics/File_Access.md)  
     - [Paragraph 0x282] [**File Permissions**](C2-Programming/C2-S8-Building_On_Basics/File_Permissions.md)  
-    - [Paragraph 0x283] [**User IDs**](C2-Programming/C2-S8-Building_On_Basics/User_IDs.md)  :godmode:
+    - [Paragraph 0x283] [**User IDs**](C2-Programming/C2-S8-Building_On_Basics/User_IDs.md)  
+    - [Paragraph 0x284] [**Structs**](C2-Programming/C2-S8-Building_On_Basics/Structs.md)  :godmode:

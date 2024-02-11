@@ -365,3 +365,51 @@ int search_note(char* note, char* keyword)
     return 0; // Return not matched.
 }
 ```
+
+Most of this code should make sense, but there are some new concepts. The filename is defined at the top instead of using heap memory. Also, the function __lseek()__ is used to rewind the read position in the file. The function call of `lseek(fd, length * -1, SEEK_CUR);` tells the program to move the read position forward from the current position in the file by _length * -1_ bytes. Since this turns out to be a negative number, the position is moved backward by __length__ bytes.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -o notesearch notesearch.c
+reader@hacking:~/booksrc $ sudo chown root:root ./notesearch
+reader@hacking:~/booksrc $ sudo chmod u+s ./notesearch
+reader@hacking:~/booksrc $ ./notesearch
+[DEBUG] found a 34 byte note for user id 999
+this is a test of multiuser notes
+-------[ end of note data ]-------
+reader@hacking:~/booksrc $
+</pre>
+
+When compiled and _setuid_ root, the notesearch program works as expected. But this is just a single user; what happens if a different user uses the notetaker and notesearch programs?
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ sudo su jose
+jose@hacking:/home/reader/booksrc $ ./notetaker "This is a note for jose"
+[DEBUG] buffer @ 0x804a008: 'This is a note for jose'
+[DEBUG] datafile @ 0x804a070: '/var/notes'
+[DEBUG] file descriptor is 3
+Note has been saved.
+jose@hacking:/home/reader/booksrc $ ./notesearch
+[DEBUG] found a 24 byte note for user id 501
+This is a note for jose
+-------[ end of note data ]-------
+jose@hacking:/home/reader/booksrc $
+</pre>
+
+When the user jose uses these programs, the _real user ID_ is _501_. This means that value is added to all notes written with notetaker, and only notes with a matching user ID will be displayed by the notesearch program.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ ./notetaker "This is another note for the reader user"
+[DEBUG] buffer @ 0x804a008: 'This is another note for the reader user'
+[DEBUG] datafile @ 0x804a070: '/var/notes'
+[DEBUG] file descriptor is 3
+Note has been saved.
+reader@hacking:~/booksrc $ ./notesearch
+[DEBUG] found a 34 byte note for user id 999
+this is a test of multiuser notes
+[DEBUG] found a 41 byte note for user id 999
+This is another note for the reader user
+-------[ end of note data ]-------
+reader@hacking:~/booksrc $
+</pre>
+
+Similarly, all notes for the user reader have the user ID _999_ attached to them. Even though both the notetaker and notesearch programs are _suid_ root and have full read and write access to the _/var/notes_ datafile, the program logic in the notesearch program prevents the current user from viewing other users’ notes. This is very similar to how the _/etc/passwd_ file stores user information for all users, yet programs like `chsh` and `passwd` allow any user to change his own shell or password.
