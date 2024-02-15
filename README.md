@@ -41,4 +41,11 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
     - [Paragraph 0x281] [**File Access**](C2-Programming/C2-S8-Building_On_Basics/File_Access.md)  
     - [Paragraph 0x282] [**File Permissions**](C2-Programming/C2-S8-Building_On_Basics/File_Permissions.md)  
     - [Paragraph 0x283] [**User IDs**](C2-Programming/C2-S8-Building_On_Basics/User_IDs.md)  
-    - [Paragraph 0x284] [**Structs**](C2-Programming/C2-S8-Building_On_Basics/Structs.md)  :godmode:
+    - [Paragraph 0x284] [**Structs**](C2-Programming/C2-S8-Building_On_Basics/Structs.md)  
+    - [Paragraph 0x285] [**Function Pointers**](C2-Programming/C2-S8-Building_On_Basics/Function_Pointers.md)  
+    - [Paragraph 0x286] [**Pseudo-random Numbers**](C2-Programming/C2-S8-Building_On_Basics/Pseudo-random_Numbers.md)  
+    - [Paragraph 0x287] [**A Game of Chance**](C2-Programming/C2-S8-Building_On_Basics/A_Game_Of_Chance.md)  
+- [Chapter 0x300] [**Exploitation**](C3-Exploitation/Intro.md)  
+  - [Section 0x310] [**Generalized Exploit Technique**](C3-Exploitation/C3-S1-Generalized_Exploit_Technique/Intro.md)  
+  - [Section 0x320] [**Buffer Overflows**](C3-Exploitation/C3-S1-Generalized_Exploit_Technique/Buffer_Overflows.md) 
+    - [Paragraph 0x321] [**Stack-Based Buffer Overflow Vulnerabilities**](C3-Exploitation/C3-S1-Generalized_Exploit_Technique/Stack-Based_Buffer_Overflow_Vulnerabilities.md)  :godmode:
