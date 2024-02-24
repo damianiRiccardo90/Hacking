@@ -46,7 +46,7 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
     - [Paragraph 0x286] [**Pseudo-random Numbers**](C2-Programming/C2-S8-Building_On_Basics/Pseudo-random_Numbers.md)  
     - [Paragraph 0x287] [**A Game of Chance**](C2-Programming/C2-S8-Building_On_Basics/A_Game_Of_Chance.md)  
 - [Chapter 0x300] [**Exploitation**](C3-Exploitation/Intro.md)  
-  - [Section 0x310] [**Generalized Exploit Technique**](C3-Exploitation/C3-S1-Generalized_Exploit_Techniques/Intro.md)  
+  - [Section 0x310] [**Generalized Exploit Techniques**](C3-Exploitation/C3-S1-Generalized_Exploit_Techniques/Intro.md)  
   - [Section 0x320] [**Buffer Overflows**](C3-Exploitation/C3-S2-Buffer_Overflows/Intro.md) 
     - [Paragraph 0x321] [**Stack-Based Buffer Overflow Vulnerabilities**](C3-Exploitation/C3-S2-Buffer_Overflows/Stack-Based_Buffer_Overflow_Vulnerabilities.md)  
   - [Section 0x330] [**Experimenting with BASH**](C3-Exploitation/C3-S3-Experimenting_With_BASH/Intro.md)  
