@@ -50,4 +50,6 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
   - [Section 0x320] [**Buffer Overflows**](C3-Exploitation/C3-S2-Buffer_Overflows/Intro.md) 
     - [Paragraph 0x321] [**Stack-Based Buffer Overflow Vulnerabilities**](C3-Exploitation/C3-S2-Buffer_Overflows/Stack-Based_Buffer_Overflow_Vulnerabilities.md)  
   - [Section 0x330] [**Experimenting with BASH**](C3-Exploitation/C3-S3-Experimenting_With_BASH/Intro.md)  
-    - [Paragraph 0x331] [**Using the Environment**](C3-Exploitation/C3-S3-Experimenting_With_BASH/Using_The_Environment.md)  :godmode:
+    - [Paragraph 0x331] [**Using the Environment**](C3-Exploitation/C3-S3-Experimenting_With_BASH/Using_The_Environment.md)  
+  - [Section 0x340] [**Overflows in Other Segments**](C3-Exploitation/C3-S4-Overflows_In_Other_Segments/Intro.md)  
+    - [Paragraph 0x341] [**A Basic Heap-Based Overflow**](C3-Exploitation/C3-S4-Overflows_In_Other_Segments/A_Basic_Heap_Based_Overflow.md)  :godmode:
