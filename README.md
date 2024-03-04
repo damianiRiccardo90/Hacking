@@ -63,4 +63,6 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
     - [Paragraph 0x356] [**Using Short Writes**](C3-Exploitation/C3-S5-Format_Strings/Using_Short_Writes.md)  
     - [Paragraph 0x357] [**Detours with .dtors**](C3-Exploitation/C3-S5-Format_Strings/Detours_With_Dtors.md)  
     - [Paragraph 0x358] [**Another notesearch Vulnerability**](C3-Exploitation/C3-S5-Format_Strings/Another_Notesearch_Vulnerability.md)  
-    - [Paragraph 0x359] [**Overwriting the Global Offset Table**](C3-Exploitation/C3-S5-Format_Strings/Overwriting_The_Global_Offset_Table.md)  :godmode:
+    - [Paragraph 0x359] [**Overwriting the Global Offset Table**](C3-Exploitation/C3-S5-Format_Strings/Overwriting_The_Global_Offset_Table.md)  
+- [Chapter 0x400] [**Networking**](C4-Networking/Intro.md)  
+  - [Section 0x410] [**OSI Model**](C4-Networking/C4-S1-OSI_Model/Intro.md)  :godmode:
