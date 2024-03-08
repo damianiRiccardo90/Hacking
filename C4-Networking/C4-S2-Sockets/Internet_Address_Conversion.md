@@ -1,0 +1,6 @@
+# *__Internet Address Conversion__*
+
+When you see _12.110.110.204_, you probably recognize this as an Internet address (IP version 4). This familiar dotted-number notation is a common way to specify Internet addresses, and there are functions to convert this notation to and from a _32-bit_ integer in network byte order. These functions are defined in the _arpa/inet.h_ include file, and the two most useful conversion functions are:
+
+- `inet_aton(char* ascii_addr, struct in_addr* network_addr)` __ASCII to Network__: This function converts an _ASCII string_ containing an IP address in dotted-number format into an in_addr structure, which, as you remember, only contains a _32-bit_ integer representing the IP address in network byte order.
+- `inet_ntoa(struct in_addr* network_addr)` __Network to ASCII__: This function  converts the other way. It is passed a pointer to an __in_addr__ structure containing an IP address, and the function returns a character pointer to an _ASCII string_ containing the IP address in dotted-number format. This string is held in a statically allocated memory buffer in the function, so it can be accessed until the next call to _inet_ntoa()_, when the string will be overwritten.
