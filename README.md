@@ -65,4 +65,11 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
     - [Paragraph 0x358] [**Another notesearch Vulnerability**](C3-Exploitation/C3-S5-Format_Strings/Another_Notesearch_Vulnerability.md)  
     - [Paragraph 0x359] [**Overwriting the Global Offset Table**](C3-Exploitation/C3-S5-Format_Strings/Overwriting_The_Global_Offset_Table.md)  
 - [Chapter 0x400] [**Networking**](C4-Networking/Intro.md)  
-  - [Section 0x410] [**OSI Model**](C4-Networking/C4-S1-OSI_Model/Intro.md)  :godmode:
+  - [Section 0x410] [**OSI Model**](C4-Networking/C4-S1-OSI_Model/Intro.md)  
+  - [Section 0x420] [**Sockets**](C4-Networking/C4-S2-Sockets/Intro.md)  
+    - [Paragraph 0x421] [**Socket Functions**](C4-Networking/C4-S2-Sockets/Socket_Functions.md)  
+    - [Paragraph 0x422] [**Socket Addresses**](C4-Networking/C4-S2-Sockets/Socket_Addresses.md)  
+    - [Paragraph 0x423] [**Network Byte Order**](C4-Networking/C4-S2-Sockets/Network_Byte_Order.md)  
+    - [Paragraph 0x424] [**Internet Address Conversion**](C4-Networking/C4-S2-Sockets/Internet_Address_Conversion.md)  
+    - [Paragraph 0x425] [**A Simple Server Example**](C4-Networking/C4-S2-Sockets/A_Simple_Server_Example.md)  
+    - [Paragraph 0x426] [**A Web Client Example**](C4-Networking/C4-S2-Sockets/A_Web_Client_Example.md)  :godmode:
