@@ -148,17 +148,103 @@ __host_lookup.c__
 int main(int argc, char* argv[]) 
 {
     struct hostent* host_info;
-struct in_addr *address;
-if(argc < 2) {
-printf("Usage: %s <hostname>\n", argv[0]);
-exit(1);
-}
-host_info = gethostbyname(argv[1]);
-if(host_info == NULL) {
-printf("Couldn't lookup %s\n", argv[1]);
-} else {
-address = (struct in_addr *) (host_info->h_addr);
-printf("%s has address %s\n", argv[1], inet_ntoa(*address));
-}
+    struct in_addr* address;
+
+    if (argc < 2) 
+    {
+        printf("Usage: %s <hostname>\n", argv[0]);
+        exit(1);
+    }
+
+    host_info = gethostbyname(argv[1]);
+    if (host_info == NULL) 
+    {
+        printf("Couldn't lookup %s\n", argv[1]);
+    } 
+    else 
+    {
+        address = (struct in_addr*) (host_info->h_addr);
+        printf("%s has address %s\n", argv[1], inet_ntoa(*address));
+    }
 }
 ```
+
+This program accepts a _hostname_ as its only argument and prints out the _IP address_. The _gethostbyname()_ function returns a pointer to a __hostent__ structure, which contains the IP address in element __h_addr__. A pointer to this element is typecast into an __in_addr__ pointer, which is later dereferenced for the call to _inet_ntoa()_, which expects a __in_addr__ structure as its argument. Sample program output is shown on the following page.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -o host_lookup host_lookup.c
+reader@hacking:~/booksrc $ ./host_lookup www.internic.net
+www.internic.net has address 208.77.188.101
+reader@hacking:~/booksrc $ ./host_lookup www.google.com
+www.google.com has address 74.125.19.103
+reader@hacking:~/booksrc $
+</pre>
+
+Using socket functions to build on this, creating a web-server identification program isn’t that difficult.
+
+__webserver_id.c__
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+
+#include "hacking.h"
+#include "hacking-network.h"
+
+int main(int argc, char* argv[]) 
+{
+    int sockfd;
+    struct hostent* host_info;
+    struct sockaddr_in target_addr;
+    unsigned char buffer[4096];
+
+    if (argc < 2) 
+    {
+        printf("Usage: %s <hostname>\n", argv[0]);
+        exit(1);
+    }
+
+    if ((host_info = gethostbyname(argv[1])) == NULL)
+        fatal("looking up hostname");
+
+    if ((sockfd = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+        fatal("in socket");
+
+    target_addr.sin_family = AF_INET;
+    target_addr.sin_port = htons(80);
+    target_addr.sin_addr = *((struct in_addr*) host_info->h_addr);
+    memset(&(target_addr.sin_zero), '\0', 8); // Zero the rest of the struct.
+
+    if (connect(sockfd, (struct sockaddr *)&target_addr, sizeof(struct sockaddr)) == -1)
+        fatal("connecting to target server");
+
+    send_string(sockfd, "HEAD / HTTP/1.0\r\n\r\n");
+
+    while (recv_line(sockfd, buffer)) 
+    {
+        if(strncasecmp(buffer, "Server:", 7) == 0) 
+        {
+            printf("The web server for %s is %s\n", argv[1], buffer+8);
+            exit(0);
+        }
+    }
+    printf("Server line not found\n");
+    exit(1);
+}
+```
+
+Most of this code should make sense to you now. The __target_addr__ structure’s __sin_addr__ element is filled using the address from the __host_info__ structure by typecasting and then dereferencing as before (but this time it’s done in a single line). The _connect()_ function is called to connect to port _80_ of the target host, the command string is sent, and the program loops reading each line into buffer. The _strncasecmp()_ function is a string comparison function from _strings.h_. This function compares the first _n_ bytes of two strings, ignoring capitalization. The first two arguments are pointers to the strings, and the third argument is _n_, the number of bytes to compare. The function will return _0_ if the strings match, so the if statement is searching for the line that starts with _"Server:"_. When it finds it, it removes the first _eight bytes_ and prints the web-server version information. The following listing shows compilation and execution of the program.
+
+<pre style="color: white;">
+reader@hacking:~/booksrc $ gcc -o webserver_id webserver_id.c
+reader@hacking:~/booksrc $ ./webserver_id www.internic.net
+The web server for www.internic.net is Apache/2.0.52 (CentOS)
+reader@hacking:~/booksrc $ ./webserver_id www.microsoft.com
+The web server for www.microsoft.com is Microsoft-IIS/7.0
+reader@hacking:~/booksrc $
+</pre>

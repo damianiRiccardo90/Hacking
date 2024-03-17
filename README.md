@@ -72,4 +72,9 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
     - [Paragraph 0x423] [**Network Byte Order**](C4-Networking/C4-S2-Sockets/Network_Byte_Order.md)  
     - [Paragraph 0x424] [**Internet Address Conversion**](C4-Networking/C4-S2-Sockets/Internet_Address_Conversion.md)  
     - [Paragraph 0x425] [**A Simple Server Example**](C4-Networking/C4-S2-Sockets/A_Simple_Server_Example.md)  
-    - [Paragraph 0x426] [**A Web Client Example**](C4-Networking/C4-S2-Sockets/A_Web_Client_Example.md)  :godmode:
+    - [Paragraph 0x426] [**A Web Client Example**](C4-Networking/C4-S2-Sockets/A_Web_Client_Example.md)  
+    - [Paragraph 0x427] [**A Tinyweb Server**](C4-Networking/C4-S2-Sockets/A_Tinyweb_Server.md)  
+  - [Section 0x430] [**Peeling Back the Lower Layers**](C4-Networking/C4-S3-Peeling_Back_The_Lower_Layers/Intro.md)  
+    - [Paragraph 0x431] [**Data-Link Layer**](C4-Networking/C4-S3-Peeling_Back_The_Lower_Layers/Data-Link_Layer.md)  
+    - [Paragraph 0x432] [**Network Layer**](C4-Networking/C4-S3-Peeling_Back_The_Lower_Layers/Network_Layer.md)  
+    - [Paragraph 0x433] [**Transport Layer**](C4-Networking/C4-S3-Peeling_Back_The_Lower_Layers/Transport_Layer.md)  :godmode:

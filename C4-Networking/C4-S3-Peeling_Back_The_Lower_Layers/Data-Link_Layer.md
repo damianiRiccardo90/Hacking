@@ -1,0 +1,21 @@
+# *__Data-Link Layer__*
+
+The lowest visible layer is the _data-link_ layer. Returning to the receptionist and bureaucracy analogy, if the physical layer below is thought of as interoffice mail carts and the network layer above as a worldwide postal system, the data-link layer is the system of interoffice mail. This layer provides a way to address and send messages to anyone else in the office, as well as to figure out who’s in the office.
+
+_Ethernet_ exists on this layer, providing a standard addressing system for all Ethernet devices. These addresses are known as _Media Access Control_ (__MAC__) addresses. Every Ethernet device is assigned a globally unique address consisting of _six bytes_, usually written in hexadecimal in the form _xx:xx:xx:xx:xx:xx_. These addresses are also sometimes referred to as hardware addresses, since each address is unique to a piece of hardware and is stored in the device’s integrated circuit memory. MAC addresses can be thought of as Social Security numbers for hardware, since each piece of hardware is supposed to have a unique MAC address.
+
+An _Ethernet header_ is _14 bytes_ in size and contains the source and destination MAC addresses for this Ethernet packet. Ethernet addressing also provides a special _broadcast address_, consisting of all binary 1’s (_ff:ff:ff:ff:ff:ff_). Any Ethernet packet sent to this address will be sent to all the connected devices.
+
+The MAC address of a network device isn’t meant to change, but its IP address may change regularly. The concept of IP addresses doesn’t exist at this level, only hardware addresses do, so a method is needed to correlate the two addressing schemes. In the office, post office mail sent to an employee at the office’s address goes to the appropriate desk. In Ethernet, the method is known as _Address Resolution Protocol_ (__ARP__).
+
+This protocol allows _“seating charts”_ to be made to associate an IP address with a piece of hardware. There are _four_ different types of ARP messages, but the two most important types are _ARP request messages_ and _ARP reply messages_. Any packet’s Ethernet header includes a type value that describes the packet. This type is used to specify whether the packet is an ARP-type message or an IP packet.
+
+An _ARP request_ is a message, sent to the broadcast address, that contains the sender’s _IP address_ and _MAC address_ and basically says, _“Hey, who has this IP? If it’s you, please respond and tell me your MAC address.”_ An _ARP reply_ is the  corresponding response that is sent to the requester’s MAC address (and IP address) saying, _“This is my MAC address, and I have this IP address.”_ Most implementations will temporarily cache the MAC/IP address pairs received in ARP replies, so that ARP requests and replies aren’t needed for every single packet. These caches are like the interoffice seating chart.
+
+For example, if one system has the IP address _10.10.10.20_ and MAC address _00:00:00:aa:aa:aa_, and another system on the same network has the IP address _10.10.10.50_ and MAC address _00:00:00:bb:bb:bb_, neither system can communicate with the other until they know each other’s MAC addresses.
+
+<div align="left" width="100%">
+<img src="ARP_Request_Reply.png?raw=true" alt="ARP Request Reply" width="100%">
+</div>
+
+If the first system wants to establish a _TCP_ connection over _IP_ to the second device’s IP address of _10.10.10.50_, the first system will first check its _ARP cache_ to see if an entry exists for _10.10.10.50_. Since this is the first time these two systems are trying to communicate, there will be no such entry, and an _ARP request_ will be sent out to the _broadcast address_, saying, _“If you are 10.10.10.50, please respond to me at 00:00:00:aa:aa:aa.”_ Since this request uses the broadcast address, every system on the network sees the request, but only the system with the corresponding IP address is meant to respond. In this case, the second system responds with an _ARP reply_ that is sent directly back to _00:00:00:aa:aa:aa_ saying, _“I am 10.10.10.50 and I’m at 00:00:00:bb:bb:bb.”_ The first system receives this reply, caches the IP and MAC address pair in its ARP cache, and uses the hardware address to communicate.
