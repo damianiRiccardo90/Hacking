@@ -61,3 +61,16 @@ September 1981
                               Figure 3.
 </pre>
 
+The _sequence number_ and _acknowledgment number_ are used to maintain state. The __SYN__ and __ACK__ flags are used together to open connections in a _three-step handshaking_ process. When a client wants to open a connection with a server, a packet with the __SYN__ flag on, but the __ACK__ flag off, is sent to the server. The server then responds with a packet that has both the __SYN__ and __ACK__ flags turned on. To complete the connection, the client sends back a packet with the __SYN__ flag off but the __ACK__ flag on. After that, every packet in the connection will have the __ACK__ flag turned on and the __SYN__ flag turned off. Only the first two packets of the connection have the __SYN__ flag on, since those packets are used to synchronize sequence numbers.
+
+<div align="left" width="100%">
+<img src="Three_Way_Handshake.png?raw=true" alt="Three Way Handshake" width="70%">
+</div>
+
+Sequence numbers allow _TCP_ to put unordered packets back into order, to determine whether packets are missing, and to prevent mixing up packets from other connections.
+
+When a connection is initiated, each side generates an _initial sequence number_. This number is communicated to the other side in the first two __SYN__ packets of the connection handshake. Then, with each packet that is sent, the sequence number is incremented by the number of bytes found in the data portion of the packet. This sequence number is included in the _TCP packet header_. In addition, each TCP header has an _acknowledgment number_, which is simply the other side’s sequence number plus one.
+
+_TCP_ is great for applications where reliability and bidirectional communication are needed. However, the cost of this functionality is paid in communication overhead.
+
+_UDP_ has much less overhead and built-in functionality than _TCP_. This lack of functionality makes it behave much like the _IP protocol_: It is connection-less and unreliable. Without built-in functionality to create connections and maintain reliability, _UDP_ is an alternative that expects the application to deal with these issues. Sometimes connections aren’t needed, and the lightweight _UDP_ is a much better protocol for these situations. The _UDP header_, defined in _RFC 768_, is relatively tiny. It only contains four _16-bit_ values in this order: _source port_, _destination port_, _length_, and _checksum_.
