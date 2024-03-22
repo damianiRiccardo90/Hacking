@@ -81,4 +81,5 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
   - [Section 0x440] [**Network Sniffing**](C4-Networking/C4-S4-Network_Sniffing/Intro.md)  
     - [Paragraph 0x441] [**Raw Socket Sniffer**](C4-Networking/C4-S4-Network_Sniffing/Raw_Socket_Sniffer.md)  
     - [Paragraph 0x442] [**libpcap Sniffer**](C4-Networking/C4-S4-Network_Sniffing/libpcap_Sniffer.md)  
-    - [Paragraph 0x443] [**Decoding the Layers**](C4-Networking/C4-S4-Network_Sniffing/Decoding_The_Layers.md)  :godmode:
+    - [Paragraph 0x443] [**Decoding the Layers**](C4-Networking/C4-S4-Network_Sniffing/Decoding_The_Layers.md)  
+    - [Paragraph 0x444] [**Active Sniffing**](C4-Networking/C4-S4-Network_Sniffing/Active_Sniffing.md)  :godmode:
