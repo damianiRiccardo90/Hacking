@@ -82,4 +82,12 @@ _Code (and text) from [**Hacking book by Jon Erickson**](https://nostarch.com/ha
     - [Paragraph 0x441] [**Raw Socket Sniffer**](C4-Networking/C4-S4-Network_Sniffing/Raw_Socket_Sniffer.md)  
     - [Paragraph 0x442] [**libpcap Sniffer**](C4-Networking/C4-S4-Network_Sniffing/libpcap_Sniffer.md)  
     - [Paragraph 0x443] [**Decoding the Layers**](C4-Networking/C4-S4-Network_Sniffing/Decoding_The_Layers.md)  
-    - [Paragraph 0x444] [**Active Sniffing**](C4-Networking/C4-S4-Network_Sniffing/Active_Sniffing.md)  :godmode:
+    - [Paragraph 0x444] [**Active Sniffing**](C4-Networking/C4-S4-Network_Sniffing/Active_Sniffing.md)  
+  - [Section 0x450] [**Denial of Service**](C4-Networking/C4-S5-Denial_Of_Service/Intro.md)  
+    - [Paragraph 0x451] [**SYN Flooding**](C4-Networking/C4-S5-Denial_Of_Service/SYN_Flooding.md)  
+    - [Paragraph 0x452] [**The Ping of Death**](C4-Networking/C4-S5-Denial_Of_Service/The_Ping_Of_Death.md)  
+    - [Paragraph 0x453] [**Teardrop**](C4-Networking/C4-S5-Denial_Of_Service/Teardrop.md)  
+    - [Paragraph 0x454] [**Ping Flooding**](C4-Networking/C4-S5-Denial_Of_Service/Ping_Flooding.md)  
+    - [Paragraph 0x455] [**Amplification Attacks**](C4-Networking/C4-S5-Denial_Of_Service/Amplification_Attacks.md)  
+    - [Paragraph 0x456] [**Distributed DoS Flooding**](C4-Networking/C4-S5-Denial_Of_Service/Distributed_DoS_Flooding.md)  
+  - [Section 0x460] [**TCP/IP Hijacking**](C4-Networking/C4-S6-TCP_IP_Hijacking/Intro.md)  :godmode:

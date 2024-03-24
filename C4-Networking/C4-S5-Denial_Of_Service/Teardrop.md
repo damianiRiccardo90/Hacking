@@ -1,0 +1,5 @@
+# *__Teardrop__*
+
+Another crashing DoS attack that came about for the same reason was called __teardrop__. _Teardrop_ exploited another weakness in several vendors’ implementations of _IP fragmentation reassembly_. Usually, when a packet is fragmented, the offsets stored in the header will line up to reconstruct the original packet with no overlap. The teardrop attack sent packet fragments with overlapping offsets, which caused implementations that didn’t check for this irregular condition to inevitably crash.
+
+Although this specific attack doesn’t work anymore, understanding the concept can reveal problems in other areas. Although not limited to a _Denial of Service_, a recent remote exploit in the _OpenBSD kernel_ (which prides itself on security) had to do with fragmented _IPv6_ packets. IP version 6 uses more complicated headers and even a different IP address format than the IPv4 most people are familiar with. Often, the same mistakes made in the past are repeated by early implementations of new products.
